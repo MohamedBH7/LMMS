@@ -1,0 +1,70 @@
+﻿@model List<LMMS.Models.BorrowedBookViewModel>
+
+<div class="container mt-4">
+    <h2 class="text-center">Borrowed Books</h2>
+
+    <table id="borrowTable" class="table table-bordered">
+        <thead>
+            <tr>
+                <th>User Email</th>
+                <th>Book ID</th>
+                <th>Borrow Date</th>
+                <th>Return Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var book in Model)
+            {
+                <tr>
+                    <td>@book.UserEmail</td>
+                    <td>@book.BookId</td>
+                    <td>@book.BorrowDate.ToString("yyyy-MM-dd")</td>
+                    <td>@(book.ReturnDate.HasValue ? book.ReturnDate.Value.ToString("yyyy-MM-dd") : "Not Returned")</td>
+                    <td>
+                        <span class="@(book.Status == "Returned" ? "bg-success" : book.Status == "Approved" ? "bg-warning" : book.Status == "Pending" ? "bg-secondary" : "") text-white px-2 rounded">
+                            @book.Status
+                        </span>
+                    </td>
+                    <td>
+                        @if (book.Status == "Approved")
+                        {
+                            <form asp-action="ReturnBook" method="post">
+                                <input type="hidden" name="bookId" value="@book.Id" />
+                                <button type="submit" class="btn btn-success btn-sm">Return</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .bg-success {
+        background-color: green !important;
+    }
+
+    .bg-warning {
+        background-color: yellow !important;
+    }
+
+    .bg-secondary {
+        background-color: grey !important;
+    }
+
+    .text-white {
+        color: white !important;
+    }
+
+    .px-2 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .rounded {
+        border-radius: 0.25rem;
+    }
+</style>

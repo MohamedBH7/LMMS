@@ -1,0 +1,23 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@if (SignInManager.IsSignedIn(User))
+{
+    <h2>Welcome @User.Identity?.Name!</h2>
+
+
+
+}
+else
+{
+    <h2>
+        You Do Not Have Access To this Page Please Login Or Register
+    </h2>
+    <partial name="_LoginPartial" />
+
+}

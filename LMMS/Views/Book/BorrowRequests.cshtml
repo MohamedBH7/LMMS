@@ -1,0 +1,37 @@
+﻿@model List<LMMS.Models.BorrowedBookViewModel>
+
+<div class="container mt-4">
+    <h2 class="text-center">Pending Borrow Requests</h2>
+
+    <table id="borrowTable" class="table table-bordered">
+        <thead>
+            <tr>
+                <th>User Email</th>
+                <th>Book Title</th>
+                <th>Borrow Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var request in Model)
+            {
+                <tr>
+                    <td>@request.UserEmail</td>
+                    <td>@request.BookTitle</td>
+                    <td>@request.BorrowDate.ToString("yyyy-MM-dd")</td>
+                    <td class="status">@request.Status</td>
+                    <td>
+                        @if (request.Status == "Pending")
+                        {
+                            <form asp-action="ApproveRequest" method="post">
+                                <input type="hidden" name="borrowId" value="@request.Id" />
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

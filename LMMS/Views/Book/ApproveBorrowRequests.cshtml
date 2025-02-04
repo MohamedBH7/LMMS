@@ -1,0 +1,53 @@
+﻿@model List<AdminBorrowedBookViewModel>
+
+<div class="container mt-4">
+    <h2 class="text-center">Approve Borrow Requests</h2>
+
+    @if (Model.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>User Email</th>
+                    <th>Borrow Date</th>
+                    <th>Return Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var book in Model)
+                {
+                    <tr>
+                        <td>@book.BookTitle</td>
+                        <td>@book.UserEmail</td>
+                        <td>@book.BorrowDate.ToString("yyyy-MM-dd")</td>
+                        <td>@(book.ReturnDate.HasValue ? book.ReturnDate.Value.ToString("yyyy-MM-dd") : "Not Returned")</td>
+                        <td>@book.Status</td>
+                        <td>
+                            @if (book.Status == "Pending")
+                            {
+                                <form asp-action="ApproveRequest" method="post" class="d-inline">
+                                    <input type="hidden" name="borrowId" value="@book.Id" />
+                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                </form>
+                            }
+                            @if (book.Status == "Approved")
+                            {
+                                <form asp-action="MarkAsReturned" method="post" class="d-inline">
+                                    <input type="hidden" name="borrowId" value="@book.Id" />
+                                    <button type="submit" class="btn btn-warning btn-sm">Mark as Returned</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-center">There are no borrow requests pending approval.</p>
+    }
+</div>

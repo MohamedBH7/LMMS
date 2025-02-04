@@ -1,0 +1,76 @@
+﻿@model List<LMMS.Models.BookViewModel>
+
+<div class="container mt-4">
+    <h2 class="text-center">Book Management</h2>
+
+    <!-- Book Form -->
+    <form method="post" asp-action="ManageBook" class="mb-4">
+        <input type="hidden" name="Id" id="bookId" />
+        <div class="row">
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="title" placeholder="Book Title" required />
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="author" placeholder="Author" required />
+            </div>
+            <div class="col-md-3">
+                <textarea class="form-control" name="description" placeholder="Description"></textarea>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control" name="quantity" placeholder="Quantity" required />
+            </div>
+        </div>
+        <div class="mt-3 text-center">
+            <button type="submit" name="action" value="Insert" class="btn btn-success">Add Book</button>
+            <button type="submit" name="action" value="Update" class="btn btn-warning">Update Book</button>
+            <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete Book</button>
+        </div>
+    </form>
+
+    <!-- Book Table -->
+    <table id="bookTable" class="display">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var book in Model)
+            {
+                <tr>
+                    <td>@book.Id</td>
+                    <td>@book.Title</td>
+                    <td>@book.Author</td>
+                    <td>@book.Description</td>
+                    <td>@book.Quantity</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editBook('@book.Id', '@book.Title', '@book.Author', '@book.Description', '@book.Quantity')">Edit</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- jQuery Script for DataTables -->
+<script>
+    $(document).ready(function () {
+        $('#bookTable').DataTable();
+    });
+
+    function editBook(id, title, author, description, quantity) {
+        $('#bookId').val(id);
+        $('input[name="title"]').val(title);
+        $('input[name="author"]').val(author);
+        $('textarea[name="description"]').val(description);
+        $('input[name="quantity"]').val(quantity);
+    }
+</script>
+
+
+

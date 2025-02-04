@@ -1,0 +1,38 @@
+﻿@model LMMS.Models.AssignRoleViewModel
+
+@{
+    ViewData["Title"] = "Assign Role";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="AssignRole" method="post">
+    <div class="form-group">
+        <label asp-for="UserId" class="control-label">User</label>
+        <select asp-for="UserId" class="form-control">
+            <option value="">Select a user</option>
+            @foreach (var user in Model.Users)
+            {
+                <option value="@user.Id">@user.Email</option>
+            }
+        </select>
+        <span asp-validation-for="UserId" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Role" class="control-label">Role</label>
+        <select asp-for="Role" class="form-control">
+            <option value="Admin">Admin</option>
+            <option value="User">User</option>
+        </select>
+        <span asp-validation-for="Role" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Assign Role" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

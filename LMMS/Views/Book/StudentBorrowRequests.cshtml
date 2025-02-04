@@ -1,0 +1,46 @@
+﻿@model List<LMMS.Models.BookViewModel>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+<div class="container mt-4">
+    <h2>Welcome @User.Identity?.Name!</h2>
+
+    <h2 class="text-center">Available Books for Borrowing</h2>
+
+    <table id="bookTable" class="display">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Available Quantity</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var book in Model)
+            {
+                <tr>
+                    <td>@book.Title</td>
+                    <td>@book.Author</td>
+                    <td>@book.Quantity</td>
+                    <td>
+                        <form asp-action="RequestBorrow" method="post">
+                            <input type="hidden" name="bookId" value="@book.Id" />
+                            <input type="hidden" name="userEmail" value="@User.Identity?.Name" />
+                            <button type="submit" class="btn btn-primary btn-sm">Request Borrow</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#bookTable').DataTable();
+    });
+</script>
