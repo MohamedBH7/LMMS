@@ -8,16 +8,161 @@
 }
 @if (SignInManager.IsSignedIn(User))
 {
-    <h2>Welcome @User.Identity?.Name!</h2>
+    <div class="container text-center my-4">
+        <h2 class="animate__animated animate__fadeInDown">Welcome @User.Identity?.Name to UTB University Library!</h2>
+        <p class="lead">Explore the vast resources, study materials, and facilities available at the University of Technology Bahrain (UTB) Library.</p>
+    </div>
 
+    <!-- Library Introduction Section -->
+    <div class="container my-4">
+        <div class="row">
+            <div class="col-md-6">
+                <img src="/img/Library.jpeg" class="img-fluid rounded animate__animated animate__fadeInLeft" alt="Library Image">
+            </div>
+            <div class="col-md-6 animate__animated animate__fadeInRight">
+                <h3>About UTB University Library</h3>
+                <p>The UTB University Library is a cornerstone of academic life at the University of Technology Bahrain. Our library offers a comprehensive collection of books, journals, and digital resources to support your educational journey. Whether you're looking for a quiet place to study or access to the latest research, our library has something for everyone.</p>
+                <p>Our mission is to provide a conducive environment for learning and research, equipped with modern facilities and a dedicated staff to assist you. Join us to explore the wealth of knowledge and resources available at UTB.</p>
+            </div>
+        </div>
+    </div>
 
+    <!-- Cards Section -->
+    <div class="container my-4">
+        <h3 class="text-center animate__animated animate__fadeInUp">Library Services</h3>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border-primary shadow-sm mb-4 animate__animated animate__fadeInUp">
+                    <img src="/img/Digital Resources.png" class="card-img-top" alt="Digital Resources">
+                    <div class="card-body">
+                        <h5 class="card-title">Digital Resources</h5>
+                        <p class="card-text">Access a vast collection of digital books, journals, and research papers from anywhere.</p>
+                        <a href="#" class="btn btn-primary">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-primary shadow-sm mb-4 animate__animated animate__fadeInUp">
+                    <img src="/img/StudyRooms.jpeg" class="card-img-top" alt="Study Rooms">
+                    <div class="card-body">
+                        <h5 class="card-title">Study Rooms</h5>
+                        <p class="card-text">Book a study room for group discussions and collaborative learning.</p>
+                        <a href="#" class="btn btn-primary">Book Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-primary shadow-sm mb-4 animate__animated animate__fadeInUp">
+                    <img src="/img/LibraryEvents.jpeg" class="card-img-top" alt="Library Events">
+                    <div class="card-body">
+                        <h5 class="card-title">Library Events</h5>
+                        <p class="card-text">Join our events and workshops to enhance your learning experience.</p>
+                        <a href="#" class="btn btn-primary">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Table Section -->
+    <div class="container my-4">
+        <h3 class="text-center animate__animated animate__fadeInUp">Available Books</h3>
+        <table class="table table-bordered table-hover mt-4 animate__animated animate__fadeInUp">
+            <thead class="table-primary">
+                <tr>
+                    <th>Book Title</th>
+                    <th>Author</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Introduction to Computer Science</td>
+                    <td>John Doe</td>
+                    <td>An introductory book on computer science concepts and programming.</td>
+                    <td>10</td>
+                </tr>
+                <tr>
+                    <td>Advanced Mathematics</td>
+                    <td>Jane Smith</td>
+                    <td>A comprehensive guide to advanced mathematical theories and applications.</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td>Physics for Engineers</td>
+                    <td>Albert Einstein</td>
+                    <td>A detailed book on physics principles and their engineering applications.</td>
+                    <td>8</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Detailed Text Sections -->
+    <div class="container my-4">
+        <h3 class="text-center animate__animated animate__fadeInUp">The Role of Libraries in Modern Education</h3>
+        <p class="animate__animated animate__fadeInUp">Libraries have long been the cornerstone of academic institutions, serving as a hub for knowledge, research, and learning. In the digital age, libraries have evolved to incorporate modern technologies while maintaining their traditional roles. The University of Technology Bahrain (UTB) Library exemplifies this blend of tradition and innovation, providing students and faculty with access to a vast array of resources.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">Historical Significance of Libraries</h4>
+        <p class="animate__animated animate__fadeInUp">The concept of the library dates back to ancient civilizations, with the Library of Alexandria being one of the most famous early examples. Libraries have always been repositories of knowledge, preserving manuscripts, books, and other documents that capture human thought and discovery. Over the centuries, libraries have transformed from exclusive collections accessible only to scholars to public institutions open to all.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">Modern Libraries: A Blend of Tradition and Technology</h4>
+        <p class="animate__animated animate__fadeInUp">Today's libraries are multifaceted institutions that offer both physical and digital resources. At UTB, the library provides access to thousands of books, academic journals, and research papers, both in print and online. The digital transformation of libraries has made it easier for students to access information from anywhere, at any time. With online databases, e-books, and digital archives, the UTB Library ensures that students have the resources they need to succeed in their studies.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">The Library as a Learning Space</h4>
+        <p class="animate__animated animate__fadeInUp">Libraries are more than just repositories of books; they are dynamic learning environments. The UTB Library is designed to cater to the diverse needs of students and faculty. It offers quiet study areas for individual work, collaborative spaces for group projects, and multimedia rooms equipped with the latest technology. These facilities support various learning styles and help students engage with their studies in meaningful ways.</p>
+
+        <h3 class="text-center animate__animated animate__fadeInUp">The Importance of Studying</h3>
+        <p class="animate__animated animate__fadeInUp">Studying is a critical component of academic success and personal development. It involves more than just reading textbooks; it encompasses a range of activities that help individuals understand and retain information. Effective studying techniques can significantly enhance a student's ability to learn and achieve their academic goals.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">Developing Effective Study Habits</h4>
+        <p class="animate__animated animate__fadeInUp">Effective study habits are essential for academic success. These habits include setting specific goals, creating a study schedule, and maintaining a focused and organized approach to learning. At UTB, students are encouraged to develop personalized study plans that suit their individual needs and learning styles. The library offers resources and workshops on time management, note-taking, and exam preparation to help students improve their study habits.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">Active Learning Strategies</h4>
+        <p class="animate__animated animate__fadeInUp">Active learning strategies involve engaging with the material in a way that promotes deeper understanding and retention. Techniques such as summarizing information, creating mind maps, and teaching concepts to others can enhance the learning process. Group study sessions, which are facilitated by the library's collaborative spaces, allow students to discuss and debate topics, further reinforcing their understanding.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">The Role of Technology in Studying</h4>
+        <p class="animate__animated animate__fadeInUp">Technology has revolutionized the way students study. Digital tools and resources, such as educational apps, online courses, and interactive simulations, provide new ways to engage with the material. The UTB Library offers access to various digital platforms that support different aspects of studying, from research and writing to organizing and reviewing notes. By integrating technology into their study routines, students can enhance their learning experiences and achieve better outcomes.</p>
+
+        <h3 class="text-center animate__animated animate__fadeInUp">The Joy of Reading</h3>
+        <p class="animate__animated animate__fadeInUp">Reading is a fundamental skill that underpins all aspects of education and personal development. It is not only a means of acquiring knowledge but also a source of pleasure and inspiration. Reading can broaden one's horizons, stimulate the imagination, and foster a lifelong love of learning.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">The Benefits of Reading</h4>
+        <p class="animate__animated animate__fadeInUp">Reading offers numerous benefits, both cognitive and emotional. It improves language skills, enhances concentration, and boosts critical thinking abilities. Reading fiction, in particular, can increase empathy and understanding by allowing readers to experience different perspectives and emotions. At UTB, the library's extensive collection of books caters to a wide range of interests, from academic texts to literature and popular fiction.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">Encouraging a Reading Culture</h4>
+        <p class="animate__animated animate__fadeInUp">Promoting a culture of reading is essential for fostering a love of learning. The UTB Library hosts various events and activities to encourage reading among students and faculty. Book clubs, author talks, and reading challenges are just a few examples of initiatives that inspire individuals to explore new genres and discover the joy of reading. By creating a vibrant reading community, the library helps to cultivate a lifelong passion for books.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">Reading for Academic Success</h4>
+        <p class="animate__animated animate__fadeInUp">Reading is a cornerstone of academic success. It provides the foundation for understanding complex concepts and conducting research. Students who develop strong reading skills are better equipped to analyze texts, synthesize information, and articulate their ideas clearly. The UTB Library supports academic reading by offering resources such as research guides, citation tools, and access to academic journals. These resources help students navigate the vast amount of information available and develop their critical reading skills.</p>
+
+        <h3 class="text-center animate__animated animate__fadeInUp">Integrating Library, Study, and Reading</h3>
+        <p class="animate__animated animate__fadeInUp">The interplay between library resources, effective study habits, and a love of reading creates a powerful framework for academic and personal growth. At UTB, the library serves as the nexus of this framework, providing the tools and support needed for students to excel.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">Comprehensive Support for Students</h4>
+        <p class="animate__animated animate__fadeInUp">The UTB Library offers comprehensive support to students at every stage of their academic journey. From orientation sessions that introduce new students to library services to advanced research assistance for graduate students, the library is committed to helping students succeed. Librarians are available to provide guidance on finding and using resources, developing research strategies, and improving study skills.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">Collaborative Learning Environment</h4>
+        <p class="animate__animated animate__fadeInUp">The library fosters a collaborative learning environment where students can work together and learn from each other. Study groups, peer tutoring, and collaborative projects are all supported by the library's facilities and resources. By promoting collaboration, the library helps students build essential skills such as communication, teamwork, and problem-solving.</p>
+
+        <h4 class="animate__animated animate__fadeInUp">Lifelong Learning</h4>
+        <p class="animate__animated animate__fadeInUp">The ultimate goal of the UTB Library is to instill a love of lifelong learning in its students. By providing access to a wealth of knowledge and fostering a supportive learning environment, the library encourages students to continue exploring and learning long after they graduate. Whether it's through formal education, professional development, or personal enrichment, the library's resources and services are designed to support lifelong learning.</p>
+
+        <h3 class="text-center animate__animated animate__fadeInUp">Conclusion</h3>
+        <p class="animate__animated animate__fadeInUp">The University of Technology Bahrain (UTB) Library plays a vital role in the academic and personal development of its students. By offering a blend of traditional and digital resources, the library provides a comprehensive support system for studying and reading. Effective study habits and a love of reading are essential components of academic success, and the library is dedicated to fostering these skills in its students. Through its diverse resources, collaborative spaces, and commitment to lifelong learning, the UTB Library empowers students to achieve their full potential and embrace the joy of learning.</p>
+    </div>
 }
 else
 {
-    <h2>
-        You Do Not Have Access To this Page Please Login Or Register
+    <h2 class="text-center my-4">
+        You Do Not Have Access To this Page. Please Login or Register.
     </h2>
-    <partial name="_LoginPartial" />
-
+    <div class="container text-center">
+        <partial name="_LoginPartial" />
+    </div>
 }
+
+<!-- Include Bootstrap 5 and Animate.css for animations -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />

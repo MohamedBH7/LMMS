@@ -222,22 +222,55 @@ namespace LMMS.Controllers
                 }
             }
 
-            return View(borrowedBooks);
+            // Sorting the list by Status: "Pending" first, then "Approved", then "Returned"
+            var sortedBorrowedBooks = borrowedBooks
+                .OrderBy(book => book.Status == "Pending" ? 1 : book.Status == "Approved" ? 2 : 3)
+                .ThenBy(book => book.BorrowDate)
+                .ToList();
+
+            return View(sortedBorrowedBooks);
         }
-        
         [HttpPost]
         public IActionResult ReturnBook(int bookId)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string query = "UPDATE BorrowedBooks SET ReturnDate = @ReturnDate, Status = 'Returned' WHERE Id = @Id";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@ReturnDate", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@Id", bookId);
 
-                    cmd.ExecuteNonQuery();
+                // Begin a transaction to ensure both updates are applied atomically
+                using (SqlTransaction transaction = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        // Update the status and return date of the borrow request
+                        string updateBorrowQuery = "UPDATE BorrowedBooks SET ReturnDate = @ReturnDate, Status = 'Returned' WHERE Id = @Id";
+                        using (SqlCommand cmd = new SqlCommand(updateBorrowQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@ReturnDate", DateTime.Now);
+                            cmd.Parameters.AddWithValue("@Id", bookId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Increase the quantity of the book by 1
+                        string updateBookQuery = @"
+                UPDATE Books
+                SET Quantity = Quantity + 1
+                WHERE Id = (SELECT BookId FROM BorrowedBooks WHERE Id = @Id)";
+                        using (SqlCommand cmd = new SqlCommand(updateBookQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@Id", bookId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        // Rollback the transaction if any error occurs
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
             }
 
@@ -290,33 +323,89 @@ namespace LMMS.Controllers
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string query = "UPDATE BorrowedBooks SET Status = 'Approved' WHERE Id = @BorrowId";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+
+                // Begin a transaction to ensure both updates are applied atomically
+                using (SqlTransaction transaction = conn.BeginTransaction())
                 {
-                    cmd.Parameters.AddWithValue("@BorrowId", borrowId);
-                    cmd.ExecuteNonQuery();
+                    try
+                    {
+                        // Update the status of the borrow request
+                        string updateBorrowQuery = "UPDATE BorrowedBooks SET Status = 'Approved' WHERE Id = @BorrowId";
+                        using (SqlCommand cmd = new SqlCommand(updateBorrowQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@BorrowId", borrowId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Decrease the quantity of the book by 1
+                        string updateBookQuery = @"
+                        UPDATE Books
+                        SET Quantity = Quantity - 1
+                        WHERE Id = (SELECT BookId FROM BorrowedBooks WHERE Id = @BorrowId)";
+                        using (SqlCommand cmd = new SqlCommand(updateBookQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@BorrowId", borrowId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        // Rollback the transaction if any error occurs
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
             }
-
-            //return RedirectToAction("PendingBorrowRequests");
-        
 
             return RedirectToAction("ApproveBorrowRequests");
         }
 
+
         [HttpPost]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult MarkAsReturned(int borrowId)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string query = "UPDATE BorrowedBooks SET Status = 'Returned', ReturnDate = @ReturnDate WHERE Id = @BorrowId";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+
+                // Begin a transaction to ensure both updates are applied atomically
+                using (SqlTransaction transaction = conn.BeginTransaction())
                 {
-                    cmd.Parameters.AddWithValue("@ReturnDate", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@BorrowId", borrowId);
-                    cmd.ExecuteNonQuery();
+                    try
+                    {
+                        // Update the status and return date of the borrow request
+                        string updateBorrowQuery = "UPDATE BorrowedBooks SET Status = 'Returned', ReturnDate = @ReturnDate WHERE Id = @BorrowId";
+                        using (SqlCommand cmd = new SqlCommand(updateBorrowQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@ReturnDate", DateTime.Now);
+                            cmd.Parameters.AddWithValue("@BorrowId", borrowId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Increase the quantity of the book by 1
+                        string updateBookQuery = @"
+                        UPDATE Books
+                        SET Quantity = Quantity + 1
+                        WHERE Id = (SELECT BookId FROM BorrowedBooks WHERE Id = @BorrowId)";
+                        using (SqlCommand cmd = new SqlCommand(updateBookQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@BorrowId", borrowId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        // Rollback the transaction if any error occurs
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
             }
 

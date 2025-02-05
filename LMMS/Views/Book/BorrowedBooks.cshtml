@@ -1,46 +1,81 @@
 ﻿@model List<LMMS.Models.BorrowedBookViewModel>
 
-<div class="container mt-4">
-    <h2 class="text-center">Borrowed Books</h2>
+<div class="container mt-5">
+    <h2 class="text-center mb-4 animate__animated animate__fadeInDown">Borrowed Books</h2>
 
-    <table id="borrowTable" class="table table-bordered">
-        <thead>
-            <tr>
-                <th>User Email</th>
-                <th>Book ID</th>
-                <th>Borrow Date</th>
-                <th>Return Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var book in Model)
-            {
+    <div class="table-responsive animate__animated animate__fadeInUp">
+        <table id="borrowTable" class="table table-striped table-bordered">
+            <thead class="table-primary">
                 <tr>
-                    <td>@book.UserEmail</td>
-                    <td>@book.BookId</td>
-                    <td>@book.BorrowDate.ToString("yyyy-MM-dd")</td>
-                    <td>@(book.ReturnDate.HasValue ? book.ReturnDate.Value.ToString("yyyy-MM-dd") : "Not Returned")</td>
-                    <td>
-                        <span class="@(book.Status == "Returned" ? "bg-success" : book.Status == "Approved" ? "bg-warning" : book.Status == "Pending" ? "bg-secondary" : "") text-white px-2 rounded">
-                            @book.Status
-                        </span>
-                    </td>
-                    <td>
-                        @if (book.Status == "Approved")
-                        {
-                            <form asp-action="ReturnBook" method="post">
-                                <input type="hidden" name="bookId" value="@book.Id" />
-                                <button type="submit" class="btn btn-success btn-sm">Return</button>
-                            </form>
-                        }
-                    </td>
+                    <th>User Email</th>
+                    <th>Book ID</th>
+                    <th>Borrow Date</th>
+                    <th>Return Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var book in Model)
+                {
+                    <tr>
+                        <td>@book.UserEmail</td>
+                        <td>@book.BookId</td>
+                        <td>@book.BorrowDate.ToString("yyyy-MM-dd")</td>
+                        <td>@(book.ReturnDate.HasValue ? book.ReturnDate.Value.ToString("yyyy-MM-dd") : "Not Returned")</td>
+                        <td>
+                            <span class="status-label @(book.Status == "Returned" ? "bg-success" : book.Status == "Approved" ? "bg-warning" : book.Status == "Pending" ? "bg-secondary" : "") text-white px-2 rounded">
+                                @book.Status
+                            </span>
+                        </td>
+                        <td>
+                            @if (book.Status == "Approved")
+                            {
+                                <form asp-action="ReturnBook" method="post" class="d-inline">
+                                    <input type="hidden" name="bookId" value="@book.Id" />
+                                    <button type="submit" class="btn btn-success btn-sm">Return</button>
+                                </form>
+                            }
+                            else if (book.Status == "Pending")
+                            {
+                                <a href="/Book/ApproveBorrowRequests" class="btn btn-warning btn-sm">Approve</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- Include Bootstrap 5 and Animate.css for animations -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Custom sorting for the Status column
+        $.fn.dataTable.ext.order['status-sort'] = function (settings, col) {
+            return this.api().column(col, { order: 'index' }).nodes().map(function (td, i) {
+                switch ($(td).text()) {
+                    case 'Pending': return 1;
+                    case 'Approved': return 2;
+                    case 'Returned': return 3;
+                    default: return 4;
+                }
+            });
+        };
+
+        $('#borrowTable').DataTable({
+            "columnDefs": [
+                { "orderable": false, "targets": 5 }, // Make the Actions column non-sortable
+                { "orderDataType": "status-sort", "targets": 4 } // Apply custom sorting to the Status column
+            ]
+        });
+    });
+</script>
 
 <style>
     .bg-success {
@@ -66,5 +101,14 @@
 
     .rounded {
         border-radius: 0.25rem;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .animate__animated {
+        animation-duration: 1s;
+        animation-fill-mode: both;
     }
 </style>

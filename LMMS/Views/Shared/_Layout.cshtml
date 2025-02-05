@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -18,7 +21,7 @@
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LMMS</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
@@ -45,7 +48,10 @@
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="MyBorrowedBooks">My Borrowed Books</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="BorrowedBooks">Return Book</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="StudentBorrowRequests">Student Borrow Requests</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="RoleManagement" asp-action="AssignRole">Assign Role</a></li>
+                                @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                                {
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="RoleManagement" asp-action="AssignRole">Assign Role</a></li>
+                                }
                             </ul>
                         </li>
                     </ul>
