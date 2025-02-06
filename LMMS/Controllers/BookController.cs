@@ -44,62 +44,66 @@ namespace LMMS.Controllers
             }
             return View(books);
         }
-        [Authorize]
-        public IActionResult MyBorrowedBooks()
-        {
-            string userEmail = User.Identity?.Name;
+        //[Authorize]
+        //public IActionResult MyBorrowedBooks()
+        //{
+        //    string userEmail = User.Identity?.Name;
 
-            if (string.IsNullOrEmpty(userEmail))
-            {
-                return RedirectToAction("Login", "Account");
-            }
+        //    if (string.IsNullOrEmpty(userEmail))
+        //    {
+        //        return RedirectToAction("Login", "Account");
+        //    }
 
-            List<BorrowedBookViewModel> borrowedBooks = new List<BorrowedBookViewModel>();
+        //    List<BorrowedBookViewModel> borrowedBooks = new List<BorrowedBookViewModel>();
 
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                string query = @"
-                SELECT bb.Id, bb.UserEmail, bb.BookId, bb.BorrowDate, bb.ReturnDate, bb.Status, b.Title AS BookTitle
-                FROM BorrowedBooks bb
-                JOIN Books b ON bb.BookId = b.Id
-                WHERE bb.UserEmail = @UserEmail";
+        //    using (SqlConnection conn = new SqlConnection(_connectionString))
+        //    {
+        //        conn.Open();
+        //        string query = @"
+        //        SELECT bb.Id, bb.UserEmail, bb.BookId, bb.BorrowDate, bb.ReturnDate, bb.Status, b.Title AS BookTitle
+        //        FROM BorrowedBooks bb
+        //        JOIN Books b ON bb.BookId = b.Id
+        //        WHERE bb.UserEmail = @UserEmail";
 
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@UserEmail", userEmail);
+        //        using (SqlCommand cmd = new SqlCommand(query, conn))
+        //        {
+        //            cmd.Parameters.AddWithValue("@UserEmail", userEmail);
 
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            borrowedBooks.Add(new BorrowedBookViewModel
-                            {
-                                Id = reader.GetInt32(0),
-                                UserEmail = reader.GetString(1),
-                                BookId = reader.GetInt32(2),
-                                BorrowDate = reader.GetDateTime(3),
-                                ReturnDate = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4),
-                                Status = reader.GetString(5),
-                                BookTitle = reader.GetString(6)
-                            });
-                        }
-                    }
-                }
-            }
+        //            using (SqlDataReader reader = cmd.ExecuteReader())
+        //            {
+        //                while (reader.Read())
+        //                {
+        //                    borrowedBooks.Add(new BorrowedBookViewModel
+        //                    {
+        //                        Id = reader.GetInt32(0),
+        //                        UserEmail = reader.GetString(1),
+        //                        BookId = reader.GetInt32(2),
+        //                        BorrowDate = reader.GetDateTime(3),
+        //                        ReturnDate = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4),
+        //                        Status = reader.GetString(5),
+        //                        BookTitle = reader.GetString(6)
+        //                    });
+        //                }
+        //            }
+        //        }
+        //    }
 
-            return View(borrowedBooks);
-        }
+        //    return View(borrowedBooks);
+        //}
 
 
         #region Action
 
         // Request to Borrow a Book
+        [Authorize]
         [HttpPost]
         public IActionResult RequestBorrow(int bookId, string userEmail)
         {
             if (string.IsNullOrEmpty(userEmail))
-                return Json(new { success = false, message = "User not authenticated" });
+            {
+                TempData["ErrorMessage"] = "User not authenticated";
+                return RedirectToAction("StudentBorrowRequests");
+            }
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
@@ -112,19 +116,56 @@ namespace LMMS.Controllers
                     bookCmd.Parameters.AddWithValue("@BookId", bookId);
                     int quantity = (int)bookCmd.ExecuteScalar();
                     if (quantity <= 0)
-                        return Json(new { success = false, message = "Book is not available for borrowing" });
+                    {
+                        TempData["ErrorMessage"] = "Book is not available for borrowing";
+                        return RedirectToAction("StudentBorrowRequests");
+                    }
                 }
 
-                // Check if the user has already borrowed 3 books
-                string checkQuery = "SELECT COUNT(*) FROM BorrowedBooks WHERE UserEmail = @UserEmail AND Status = 'Approved'";
-                using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                //// Check if the user has already borrowed 3 books Approved || Pending
+                //string checkQuery = "SELECT COUNT(*) FROM BorrowedBooks WHERE UserEmail = @UserEmail AND (Status = 'Approved' OR Status = 'Pending')";
+                //using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                //{
+                //    checkCmd.Parameters.AddWithValue("@UserEmail", userEmail);
+                //    int count = (int)checkCmd.ExecuteScalar();
+                //    if (count >= 3)
+                //    {
+                //        TempData["ErrorMessage"] = "You cannot borrow more than 3 books at the same time.";
+                //        return RedirectToAction("StudentBorrowRequests");
+                //    }
+                //}
+
+
+                //
+                // Check the number of approved books
+                string approvedQuery = "SELECT COUNT(*) FROM BorrowedBooks WHERE UserEmail = @UserEmail AND Status = 'Approved'";
+                int approvedCount;
+                using (SqlCommand approvedCmd = new SqlCommand(approvedQuery, conn))
                 {
-                    checkCmd.Parameters.AddWithValue("@UserEmail", userEmail);
-                    int count = (int)checkCmd.ExecuteScalar();
-                    if (count >= 3)
-                        return Json(new { success = false, message = "You cannot borrow more than 3 books at the same time" });
+                    approvedCmd.Parameters.AddWithValue("@UserEmail", userEmail);
+                    approvedCount = (int)approvedCmd.ExecuteScalar();
                 }
 
+                // Check the total number of approved and pending books
+                string totalQuery = "SELECT COUNT(*) FROM BorrowedBooks WHERE UserEmail = @UserEmail AND (Status = 'Approved' OR Status = 'Pending')";
+                int totalCount;
+                using (SqlCommand totalCmd = new SqlCommand(totalQuery, conn))
+                {
+                    totalCmd.Parameters.AddWithValue("@UserEmail", userEmail);
+                    totalCount = (int)totalCmd.ExecuteScalar();
+                }
+
+                if (approvedCount >= 3)
+                {
+                    TempData["ErrorMessage"] = "You cannot borrow more than 3 approved books at the same time.";
+                    return RedirectToAction("StudentBorrowRequests");
+                }
+                else if (totalCount >= 3)
+                {
+                    // Allow the request but inform the user that they have reached the limit
+                    TempData["WarningMessage"] = "Your borrow request has been submitted, but you have now reached the limit of 3 books (approved and pending).";
+                     ;
+                }
                 // Insert borrow request
                 string query = "INSERT INTO BorrowedBooks (UserEmail, BookId, Status) VALUES (@UserEmail, @BookId, 'Pending')";
                 using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -132,8 +173,15 @@ namespace LMMS.Controllers
                     cmd.Parameters.AddWithValue("@UserEmail", userEmail);
                     cmd.Parameters.AddWithValue("@BookId", bookId);
                     int rowsAffected = cmd.ExecuteNonQuery();
-                    //return MyBorrowedBooks();
-                    return RedirectToAction("BorrowedBooks");
+                    if (rowsAffected > 0 && totalCount <= 3)
+                    {
+                        TempData["SuccessMessage"] = "Borrow request submitted successfully";
+                    }
+                    else if(rowsAffected ==0 || rowsAffected == null)
+                    {
+                        TempData["ErrorMessage"] = "Failed to submit borrow request";
+                    }
+                    return RedirectToAction("MyBorrowedBooks");
                 }
             }
         }
@@ -157,6 +205,9 @@ namespace LMMS.Controllers
         }
 
         // Get Pending Borrow Requests (For Admin)
+
+        [Authorize(Roles = "Admin")]
+
         public IActionResult BorrowRequests()
         {
             List<BorrowedBookViewModel> borrowRequests = new List<BorrowedBookViewModel>();
@@ -413,6 +464,69 @@ namespace LMMS.Controllers
             }
 
             return RedirectToAction("ApproveBorrowRequests");
+        }
+
+
+
+        [HttpPost]
+        public IActionResult RemovePendingRequest(int bookId)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string query = "DELETE FROM BorrowedBooks WHERE Id = @BookId AND Status = 'Pending'";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@BookId", bookId);
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        TempData["SuccessMessage"] = "Pending borrow request removed successfully";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Failed to remove pending borrow request";
+                    }
+                }
+            }
+            return RedirectToAction("MyBorrowedBooks");
+        }
+
+        [HttpGet]
+        public IActionResult MyBorrowedBooks()
+        {
+            var borrowedBooks = new List<BorrowedBookViewModel>();
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string query = @"
+                SELECT bb.Id, bb.UserEmail, bb.BookId, bb.BorrowDate, bb.ReturnDate, bb.Status, b.Title AS BookTitle
+                FROM BorrowedBooks bb
+                JOIN Books b ON bb.BookId = b.Id
+                WHERE bb.UserEmail = @UserEmail"; using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserEmail", User.Identity.Name);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            borrowedBooks.Add(new BorrowedBookViewModel
+                            {
+                               Id = reader.GetInt32(0),
+                               UserEmail = reader.GetString(1),
+                               BookId = reader.GetInt32(2),
+                               BorrowDate = reader.GetDateTime(3),
+                               ReturnDate = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4),
+                               Status = reader.GetString(5),
+                               BookTitle = reader.GetString(6)
+                            });
+                        }
+                    }
+                }
+            }
+
+            return View(borrowedBooks);
         }
         #endregion
     }

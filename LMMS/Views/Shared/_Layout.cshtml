@@ -35,7 +35,7 @@
                         <!-- Dropdown Menu for Additional Pages -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                More Pages
+                                Admin
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Dashboard">Dashboard</a></li>
@@ -45,16 +45,38 @@
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="ApproveBorrowRequests">Approve Borrow Requests</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="BorrowedBooks">Borrowed Books</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="BorrowRequests">Borrow Requests</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="MyBorrowedBooks">My Borrowed Books</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="BorrowedBooks">Return Book</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="StudentBorrowRequests">Student Borrow Requests</a></li>
                                 @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
                                 {
                                     <li><a class="dropdown-item" asp-area="" asp-controller="RoleManagement" asp-action="AssignRole">Assign Role</a></li>
                                 }
                             </ul>
                         </li>
+                        <!-- Dropdown Menu for Additional Pages -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Student
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Dashboard">Dashboard</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="MyBorrowedBooks">My Borrowed Books</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Book" asp-action="StudentBorrowRequests">Student Borrow Requests</a></li>
+
+                            </ul>
+                        </li>
                     </ul>
+
+
+            
+              
+                   
+
+
+
+
+
                     <partial name="_LoginPartial" />
                 </div>
             </div>
