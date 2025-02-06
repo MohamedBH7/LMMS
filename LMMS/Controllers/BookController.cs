@@ -192,8 +192,11 @@ namespace LMMS.Controllers
             return View(borrowRequests);
         }
 
+        
+        [Authorize(Roles = "Admin")]
 
         [HttpGet]
+
         public IActionResult BorrowedBooks()
         {
             var borrowedBooks = new List<BorrowedBookViewModel>();
