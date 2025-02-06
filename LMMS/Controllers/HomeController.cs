@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using LMMS.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 
@@ -70,6 +71,7 @@ namespace LMMS.Controllers
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult Manage()   // manage Page
         {
 
