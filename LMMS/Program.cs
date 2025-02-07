@@ -54,16 +54,16 @@ app.Run();
 static async Task CreateRolesAndAdminUser(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
 {
     // Create Admin role if it doesn't exist
-    if (!await roleManager.RoleExistsAsync("Admin"))
-    {
-        await roleManager.CreateAsync(new IdentityRole("Admin"));
-    }
+    //if (!await roleManager.RoleExistsAsync("Admin"))
+    //{
+    //    await roleManager.CreateAsync(new IdentityRole("Admin"));
+    //}
 
-    // Assign the Admin role to a specific user (change email as needed)
-    var adminEmail = "admin@example.com";
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
-    {
-        await userManager.AddToRoleAsync(adminUser, "Admin");
-    }
+    //// Assign the Admin role to a specific user (change email as needed)
+    //var adminEmail = "admin@example.com";
+    //var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    //if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
+    //{
+    //    await userManager.AddToRoleAsync(adminUser, "Admin");
+    //}
 }

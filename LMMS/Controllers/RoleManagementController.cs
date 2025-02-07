@@ -1,6 +1,7 @@
 ﻿using LMMS.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,25 +31,30 @@ namespace LMMS.Controllers
         [HttpPost]
         public async Task<IActionResult> AssignRole(AssignRoleViewModel model)
         {
-            if (ModelState.IsValid)
+            // Check if the model state is valid
+            if (!ModelState.IsValid)
             {
-                var user = await _userManager.FindByIdAsync(model.UserId);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
-
-                var result = await _userManager.AddToRoleAsync(user, model.Role);
-                if (result.Succeeded)
-                {
-                    return Ok($"User added to {model.Role} role");
-                }
-
-                return BadRequest("Failed to add user to role");
+                model.Users = await _userManager.Users.ToListAsync(); // Repopulate the users list in case of validation errors
+                return View(model);
             }
 
-            model.Users = _userManager.Users.ToList(); // Repopulate the users list in case of validation errors
-            return View(model);
+            // Try to find the user by ID
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return NotFound($"User with ID {model.UserId} not found.");
+            }
+
+            // Add the user to the role
+            var result = await _userManager.AddToRoleAsync(user, model.Role);
+            if (result.Succeeded)
+            {
+                return Ok($"User added to {model.Role} role successfully.");
+            }
+
+            // Return a bad request if the operation failed
+            return BadRequest($"Failed to add user to {model.Role} role.");
         }
+
     }
 }
