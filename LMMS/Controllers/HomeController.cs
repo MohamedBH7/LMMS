@@ -129,8 +129,10 @@ namespace LMMS.Controllers
 
         #region Actions 
 
+        // Manage Book (Insert, Update, Delete)
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult ManageBook(string title, string author, string description, int quantity, string action,int id)
+        public IActionResult ManageBook(string title, string author, string description, int quantity, string action, int id)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
@@ -138,14 +140,17 @@ namespace LMMS.Controllers
                 if (action == "Insert")
                 {
                     query = "INSERT INTO Books (Title, Author, Description, Quantity) VALUES (@Title, @Author, @Description, @Quantity)";
+                    TempData["SuccessMessage"] = "Book inserted successfully";
                 }
                 else if (action == "Update")
                 {
                     query = "UPDATE Books SET Title = @Title, Author = @Author, Description = @Description, Quantity = @Quantity WHERE Id = @Id";
+                    TempData["WarningMessage"] = "Book updated successfully";
                 }
                 else if (action == "Delete")
                 {
                     query = "DELETE FROM Books WHERE Id = @Id";
+                    TempData["ErrorMessage"] = "Book deleted successfully";
                 }
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -161,8 +166,6 @@ namespace LMMS.Controllers
 
                     conn.Open();
                     cmd.ExecuteNonQuery();
-                    //Here Make If Row Effice or any change have to the selected row returen with responses done or not Done and the New  value have been saved 
-
                 }
             }
             return RedirectToAction("Manage");
