@@ -1,0 +1,12 @@
+﻿@{
+    ViewData["Title"] = "Instructor Dashboard";
+}
+
+<h1>Welcome, Instructor!</h1>
+
+<p>Use the options below to manage your book requests.</p>
+
+<ul>
+    <li><a href="@Url.Action("BookRequests", "Instructor")">View Book Requests</a></li>
+    <li><a href="@Url.Action("RequestBook", "Instructor")">Request a New Book</a></li>
+</ul>

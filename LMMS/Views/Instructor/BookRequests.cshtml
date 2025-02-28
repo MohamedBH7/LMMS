@@ -1,0 +1,45 @@
+﻿@model IEnumerable<LMMS.Models.BookRequest>
+
+@{
+    ViewData["Title"] = "Book Requests";
+}
+
+<h1>Book Requests</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Published Year</th>
+            <th>Section</th>
+            <th>State</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var request in Model)
+        {
+            <tr>
+                <td>@request.Title</td>
+                <td>@request.Author</td>
+                <td>@request.PublishedYear</td>
+                <td>@request.SectionName</td>
+                <td>@request.State</td>
+                <td>
+                    <!-- Reject Request Button -->
+                    <form asp-action="RejectRequest" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@request.Id" />
+                        <button type="submit" class="btn btn-warning">Reject</button>
+                    </form>
+
+                    <!-- Delete Request Button -->
+                    <form asp-action="DeleteRequest" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@request.Id" />
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

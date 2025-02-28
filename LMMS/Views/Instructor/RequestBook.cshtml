@@ -1,0 +1,49 @@
+﻿@model LMMS.Models.BookRequest
+
+@{
+    ViewData["Title"] = "Request Book";
+}
+
+<h1>Request a Book</h1>
+
+<form method="post" action="@Url.Action("RequestBook", "Instructor")">
+    @if (!string.IsNullOrEmpty(ViewData["ErrorMessage"]?.ToString()))
+    {
+        <div class="alert alert-danger">
+            @ViewData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="form-group">
+        <label for="Title">Title</label>
+        <input type="text" class="form-control" id="Title" name="Title" value="@Model?.Title" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Author">Author</label>
+        <input type="text" class="form-control" id="Author" name="Author" value="@Model?.Author" required />
+    </div>
+
+    <div class="form-group">
+        <label for="PublishedYear">Published Year</label>
+        <input type="number" class="form-control" id="PublishedYear" name="PublishedYear" value="@Model?.PublishedYear" required />
+    </div>
+
+    <div class="form-group">
+        <label for="SectionId">Section</label>
+        <select class="form-control" id="SectionId" name="SectionId" required>
+            <option value="">Select a section</option>
+            @foreach (var sec in ViewBag.Sections as SelectList)
+            {
+                <option value="@sec.Value" selected="@sec.Selected">@sec.Text</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit Request</button>
+</form>
+
+@section Scripts
+{
+    <script src="~/js/custom-scripts.js"></script>
+}

@@ -1,0 +1,62 @@
+﻿Run this 
+Sql 
+!- 
+
+
+"
+CREATE TABLE Books_Request_To_Add (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Title NVARCHAR(255) NOT NULL,
+    Author NVARCHAR(255) NOT NULL,
+    PublishedYear INT,
+    InstructorId INT NOT NULL,
+    RequestDate DATETIME DEFAULT GETDATE(),
+    State NVARCHAR(50) CHECK (State IN ('Pending', 'Add Done', 'Approved', 'Rejected', 'Not Found', 'More')),
+);
+
+"
+
+Sql :
+
+
+"
+
+INSERT INTO [aspnet-LMMS-7fc7690b-1ba3-432f-9f4f-99c7a2dbeb77].[dbo].[AspNetRoles] ([Id], [Name], [NormalizedName], [ConcurrencyStamp])
+VALUES 
+  (NEWID(), 'Instructor', 'INSTRUCTOR', NULL),
+  (NEWID(), 'Student', 'STUDENT', NULL);
+"
+
+sql 
+
+"
+CREATE TABLE BookSection (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    SectionName NVARCHAR(255) NOT NULL
+);
+
+-- Insert some initial values for book sections
+INSERT INTO BookSection (SectionName) VALUES
+('Computer Coding'),
+('Data Mining'),
+('Marketing'),
+('Engineering'),
+('AI & Machine Learning'),
+('General');
+
+
+
+"
+
+sql 
+"
+
+
+ALTER TABLE Books_Request_To_Add
+ADD SectionId INT;
+
+-- Add foreign key relationship with BookSection
+ALTER TABLE Books_Request_To_Add
+ADD CONSTRAINT FK_Books_Request_To_Add_BookSection FOREIGN KEY (SectionId) REFERENCES BookSection(Id);
+
+"

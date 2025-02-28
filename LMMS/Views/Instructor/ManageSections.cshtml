@@ -1,0 +1,53 @@
+﻿@model IEnumerable<LMMS.Models.BookSection>
+
+@{
+    ViewData["Title"] = "Manage Sections";
+}
+
+@section Scripts {
+    <script>
+        // Your custom JavaScript here
+    </script>
+}
+
+<h1>Manage Sections</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Section Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sec in Model) // Changed 'section' to 'sec'
+        {
+            <tr>
+                <td>@sec.SectionName</td> <!-- Fixed variable usage -->
+                <td>
+                    <!-- Edit Section Form -->
+                    <form asp-action="UpdateSection" method="post" style="display:inline;">
+                        <input type="hidden" name="Id" value="@sec.Id" />
+                        <input type="text" name="SectionName" value="@sec.SectionName" />
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+
+                    <!-- Remove Section Form -->
+                    <form asp-action="RemoveSection" method="post" style="display:inline;">
+                        <input type="hidden" name="Id" value="@sec.Id" />
+                        <button type="submit" class="btn btn-danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Add Section Form -->
+<form asp-action="AddSection" method="post">
+    <div class="form-group">
+        <label for="SectionName">New Section Name</label>
+        <input type="text" class="form-control" id="SectionName" name="SectionName" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Add Section</button>
+</form>
