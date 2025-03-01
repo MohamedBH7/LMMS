@@ -157,6 +157,58 @@ namespace LMMS.Controllers
 
 
 
+
+        public IActionResult Requests()
+        {
+            List<BookRequest> requests = new List<BookRequest>();
+            var currentUserEmail = User.Identity?.Name;
+            if(currentUserEmail == null) 
+                return NotFound("You Have To Login");
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string query = @"
+                    SELECT br.*, bs.SectionName 
+                    FROM Books_Request_To_Add br
+                    LEFT JOIN BookSection bs ON br.SectionId = bs.Id
+                    WHERE br.Email = @Email";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Email", currentUserEmail);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            requests.Add(new BookRequest
+                            {
+                                Id = Convert.ToInt32(reader["Id"]),
+                                Title = reader["Title"].ToString(),
+                                Author = reader["Author"].ToString(),
+                                PublishedYear = reader["PublishedYear"] != DBNull.Value ? Convert.ToInt32(reader["PublishedYear"]) : (int?)null,
+                                Email = reader["Email"].ToString(),
+                                RequestDate = Convert.ToDateTime(reader["RequestDate"]),
+                                State = reader["State"].ToString(),
+                                SectionId = Convert.ToInt32(reader["SectionId"]),
+                                SectionName = reader["SectionName"].ToString()
+                            });
+                        }
+                    }
+                }
+            }
+
+            return View(requests);
+
+
+
+
+
+
+
+        }
+
+
+
         #region API Actions 
 
         // API to Reject a Book Request
@@ -205,10 +257,9 @@ namespace LMMS.Controllers
             return BadRequest(new { message = "Error Deleting Request" });
         }
 
-        // API to Reject a Book Request
-        [HttpPut("api/bookrequests/ApprovedRequest/{id}")]
+        [HttpPut("api/bookrequests/approve/{id}")]
         [Authorize(Roles = "Instructor")]
-        public IActionResult ApprovedRequest(int id)
+        public IActionResult ApproveRequest(int id)
         {
             try
             {
@@ -221,19 +272,20 @@ namespace LMMS.Controllers
                     {
                         cmd.Parameters.AddWithValue("@Id", id);
                         int rowsAffected = cmd.ExecuteNonQuery();
+
                         if (rowsAffected > 0)
                             return Ok(new { message = "Request Approved" });
+                        else
+                            return NotFound(new { message = "Request Not Found" });
                     }
                 }
-
-                return BadRequest(new { message = "Error Approved Request" });
             }
             catch (Exception ex)
             {
-                // Log the exception
-                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+                return StatusCode(500, new { message = "Internal Server Error", details = ex.Message });
             }
         }
+
 
 
 
@@ -244,7 +296,7 @@ namespace LMMS.Controllers
 
         #region Admin Part Mange 
 
-        [Authorize(Roles = "Instructor")]
+        [Authorize(Roles = "Admin")]
         public IActionResult ManageSections()
         {
             List<BookSection> sections = new List<BookSection>();

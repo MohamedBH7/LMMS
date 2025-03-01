@@ -49,6 +49,7 @@
                                 @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
                                 {
                                     <li><a class="dropdown-item" asp-area="" asp-controller="RoleManagement" asp-action="AssignRole">Assign Role</a></li>
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="Instructor" asp-action="ManageSections">ManageSections</a></li>
                                 }
                             </ul>
                         </li>

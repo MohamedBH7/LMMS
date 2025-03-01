@@ -1,0 +1,79 @@
+﻿@model IEnumerable<LMMS.Models.BookRequest>
+
+@{
+    ViewData["Title"] = "Book Requests";
+    var currentUserEmail = User.Identity?.Name;
+}
+
+<h1 class="mb-4 text-primary"><i class="fas fa-book"></i> Pending Book Requests</h1>
+
+<!-- Pending Book Requests Table -->
+<table id="pendingRequestsTable" class="table table-striped table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Published Year</th>
+            <th>Section</th>
+            <th>State</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var request in Model.Where(r => r.State == "Pending"))
+        {
+            <tr id="request-@request.Id">
+                <td>@request.Title</td>
+                <td>@request.Author</td>
+                <td>@request.PublishedYear</td>
+                <td>@request.SectionName</td>
+                <td>
+                    <span class="badge bg-warning text-dark">@request.State</span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h1 class="mt-5 mb-4 text-primary"><i class="fas fa-book"></i> Processed Book Requests</h1>
+
+<!-- Processed Book Requests Table -->
+<table id="processedRequestsTable" class="table table-striped table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Published Year</th>
+            <th>Section</th>
+            <th>State</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var request in Model.Where(r => r.State != "Pending"))
+        {
+            <tr id="request-@request.Id">
+                <td>@request.Title</td>
+                <td>@request.Author</td>
+                <td>@request.PublishedYear</td>
+                <td>@request.SectionName</td>
+                <td>
+                    <span class="badge @(request.State == "Approved" ? "bg-success" : "bg-danger")">
+                        @request.State
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+
+
+           
+
+           
+        });
+    </script>
+}
