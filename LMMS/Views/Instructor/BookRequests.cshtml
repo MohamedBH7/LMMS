@@ -5,6 +5,17 @@
 }
 
 <h1 class="mb-4">Book Requests</h1>
+<!-- Toast notification container -->
+<div id="toast-container" class="position-fixed top-0 end-0 p-3">
+    <div id="toast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" style="display: none;">
+        <div class="d-flex">
+            <div class="toast-body">
+                <span id="toast-message">Action completed successfully!</span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
 
 <div class="mb-3 d-flex justify-content-between">
     <input type="text" id="searchInput" class="form-control w-25" placeholder="Search...">
@@ -40,7 +51,7 @@
                 </td>
                 <td>
                     <button class="btn btn-danger" onclick="openConfirmModal('reject', @request.Id)">Reject</button>
-                    <button class="btn btn-success" onclick="openConfirmModal('approve', @request.Id)">Approve</button>
+                    <button class="btn btn-success" onclick="openConfirmModal('approve', @request.Id, '@request.Title', '@request.Author')">Approve</button>
                     <button class="btn btn-secondary" onclick="openConfirmModal('delete', @request.Id)">Delete</button>
                 </td>
             </tr>
@@ -57,6 +68,16 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="modalMessage">Are you sure?</div>
+            <div class="modal-body" id="bookDetails" style="display:none;">
+                <div class="mb-3">
+                    <label for="quantityInput" class="form-label">Quantity</label>
+                    <input type="number" id="quantityInput" class="form-control" placeholder="Enter Quantity">
+                </div>
+                <div class="mb-3">
+                    <label for="descriptionInput" class="form-label">Description</label>
+                    <textarea id="descriptionInput" class="form-control" placeholder="Enter Description"></textarea>
+                </div>
+            </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="confirmBtn">Confirm</button>
@@ -70,10 +91,14 @@
     <script>
         let actionType = '';
         let actionId = 0;
+        let bookTitle = '';
+        let bookAuthor = '';
 
-        function openConfirmModal(type, id) {
+        function openConfirmModal(type, id, title = '', author = '') {
             actionType = type;
             actionId = id;
+            bookTitle = title;
+            bookAuthor = author;
 
             const messages = {
                 'reject': 'Are you sure you want to reject this request?',
@@ -83,6 +108,7 @@
 
             document.getElementById('modalMessage').innerText = messages[type];
             document.getElementById('confirmBtn').className = `btn btn-${type === 'reject' ? 'danger' : type === 'approve' ? 'success' : 'secondary'}`;
+            document.getElementById('bookDetails').style.display = (type === 'approve') ? 'block' : 'none'; // Show the inputs only for approve action
 
             const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
             confirmModal.show();
@@ -90,25 +116,53 @@
 
         document.getElementById('confirmBtn').addEventListener('click', async function () {
             let url = '';
-            switch (actionType) {
-                case 'reject':
-                    url = `/api/bookrequests/reject/${actionId}`;
-                    break;
-                case 'approve':
-                    url = `/api/bookrequests/ApprovedRequest/${actionId}`;
-                    break;
-                case 'delete':
-                    url = `/api/bookrequests/delete/${actionId}`;
-                    break;
+            let body = {};
+
+            if (actionType === 'approve') {
+                let quantity = document.getElementById('quantityInput').value;
+                let description = document.getElementById('descriptionInput').value;
+
+                // Validate the Quantity and Description fields
+                if (!quantity || quantity <= 0) {
+                    alert("Please provide a valid quantity.");
+                    return;
+                }
+
+                if (!description) {
+                    alert("Please provide a description.");
+                    return;
+                }
+
+                body = {
+                    title: bookTitle,
+                    author: bookAuthor,
+                    quantity: quantity,
+                    description: description
+                };
+
+                url = `/api/bookrequests/ApproveRequest/${actionId}`;
+            } else {
+                // URL for other actions like reject or delete
+                switch (actionType) {
+                    case 'reject':
+                        url = `/api/bookrequests/reject/${actionId}`;
+                        break;
+                    case 'delete':
+                        url = `/api/bookrequests/delete/${actionId}`;
+                        break;
+                }
             }
 
             try {
                 const response = await fetch(url, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body) // Send the body only for 'approve'
                 });
+
                 if (response.ok) {
                     document.getElementById(`request-${actionId}`).remove();
+                    alert(actionType === 'approve' ? "Book approved and added!" : "Action completed successfully!");
                 }
             } catch (error) {
                 console.error('Error:', error);

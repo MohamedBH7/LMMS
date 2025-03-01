@@ -257,26 +257,73 @@ namespace LMMS.Controllers
             return BadRequest(new { message = "Error Deleting Request" });
         }
 
-        [HttpPut("api/bookrequests/approve/{id}")]
+        [HttpPut("api/bookrequests/ApproveRequest/{id}")]
         [Authorize(Roles = "Instructor")]
-        public IActionResult ApproveRequest(int id)
+        public async Task<IActionResult> ApproveRequest(int id, [FromBody] ApproveRequestModel request)
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(_connectionString))
+                using (var connection = new SqlConnection(_connectionString))
                 {
-                    conn.Open();
-                    string query = "UPDATE Books_Request_To_Add SET State = 'Approved' WHERE Id = @Id";
+                    await connection.OpenAsync();
 
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    // First, get the request details to add the book
+                    string getRequestQuery = "SELECT Title, Author, SectionId FROM Books_Request_To_Add WHERE Id = @Id";
+                    using (var cmd = new SqlCommand(getRequestQuery, connection))
                     {
                         cmd.Parameters.AddWithValue("@Id", id);
-                        int rowsAffected = cmd.ExecuteNonQuery();
 
-                        if (rowsAffected > 0)
-                            return Ok(new { message = "Request Approved" });
-                        else
-                            return NotFound(new { message = "Request Not Found" });
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (!reader.HasRows)
+                            {
+                                return NotFound(new { message = "Request not found or already processed." });
+                            }
+
+                            // Read the request details
+                            reader.Read();
+                            string title = reader["Title"].ToString();
+                            string author = reader["Author"].ToString();
+                            int sectionId = Convert.ToInt32(reader["SectionId"]);
+
+                            // Update the request state to 'Approved'
+                            string updateQuery = "UPDATE Books_Request_To_Add SET State = 'Approved' WHERE Id = @Id";
+                            using (var updateCmd = new SqlCommand(updateQuery, connection))
+                            {
+                                updateCmd.Parameters.AddWithValue("@Id", id);
+                                int rowsAffected = await updateCmd.ExecuteNonQueryAsync();
+
+                                if (rowsAffected <= 0)
+                                {
+                                    return BadRequest(new { message = "Failed to approve the request." });
+                                }
+                            }
+
+                            // Now add the book to the Books table
+                            string addBookQuery = @"
+                        INSERT INTO [dbo].[Books] ([Title], [Author], [Description], [Quantity], [SectionId])
+                        VALUES (@Title, @Author, @Description, @Quantity, @SectionId)";
+
+                            using (var insertCmd = new SqlCommand(addBookQuery, connection))
+                            {
+                                insertCmd.Parameters.AddWithValue("@Title", title);
+                                insertCmd.Parameters.AddWithValue("@Author", author);
+                                insertCmd.Parameters.AddWithValue("@Description", request.Description ?? (object)DBNull.Value); // Using request description
+                                insertCmd.Parameters.AddWithValue("@Quantity", request.Quantity); // Using request quantity
+                                insertCmd.Parameters.AddWithValue("@SectionId", sectionId);
+
+                                int rowsInserted = await insertCmd.ExecuteNonQueryAsync();
+
+                                if (rowsInserted > 0)
+                                {
+                                    return Ok(new { message = "Request approved and book added successfully!" });
+                                }
+                                else
+                                {
+                                    return BadRequest(new { message = "Failed to add the book." });
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -286,6 +333,23 @@ namespace LMMS.Controllers
             }
         }
 
+        public class ApproveRequestModel
+        {
+            public string Description { get; set; }
+            public int Quantity { get; set; }
+        }
+
+
+
+
+        public class AddBookRequest
+        {
+            public string Title { get; set; }
+            public string Author { get; set; }
+            public string Description { get; set; }
+            public int Quantity { get; set; }
+            public int SectionId { get; set; }
+        }
 
 
 
