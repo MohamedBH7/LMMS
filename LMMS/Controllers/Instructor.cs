@@ -155,6 +155,10 @@ namespace LMMS.Controllers
             return View(requests);
         }
 
+
+
+        #region API Actions 
+
         // API to Reject a Book Request
         [HttpPut("api/bookrequests/reject/{id}")]
         [Authorize(Roles = "Instructor")]
@@ -183,6 +187,7 @@ namespace LMMS.Controllers
         [Authorize(Roles = "Instructor")]
         public IActionResult DeleteRequest(int id)
         {
+            
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
@@ -200,6 +205,39 @@ namespace LMMS.Controllers
             return BadRequest(new { message = "Error Deleting Request" });
         }
 
+        // API to Reject a Book Request
+        [HttpPut("api/bookrequests/ApprovedRequest/{id}")]
+        [Authorize(Roles = "Instructor")]
+        public IActionResult ApprovedRequest(int id)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    string query = "UPDATE Books_Request_To_Add SET State = 'Approved' WHERE Id = @Id";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", id);
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        if (rowsAffected > 0)
+                            return Ok(new { message = "Request Approved" });
+                    }
+                }
+
+                return BadRequest(new { message = "Error Approved Request" });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
+        }
+
+
+
+        #endregion
 
         #endregion
 
