@@ -183,7 +183,7 @@ namespace LMMS.Controllers
 
 
         // API to Delete a Book Request
-        [HttpDelete("api/bookrequests/delete/{id}")]
+        [HttpPut("api/bookrequests/delete/{id}")]
         [Authorize(Roles = "Instructor")]
         public IActionResult DeleteRequest(int id)
         {
