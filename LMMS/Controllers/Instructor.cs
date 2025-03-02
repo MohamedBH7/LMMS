@@ -10,7 +10,7 @@ namespace LMMS.Controllers
 {
     public class Instructor : Controller
     {
-        private readonly string _connectionString = "Server=(localdb)\\mssqllocaldb;Database=aspnet-LMMS-7fc7690b-1ba3-432f-9f4f-99c7a2dbeb77;Trusted_Connection=True;MultipleActiveResultSets=true";
+        private readonly string _connectionString = "Server=DESKTOP-8EVQE8E;Database=aspnet-LMMS-7fc7690b-1ba3-432f-9f4f-99c7a2dbeb77;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=true;";
         [Authorize(Roles = "Instructor")]
 
         public IActionResult Index()
