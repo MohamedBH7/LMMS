@@ -6,10 +6,32 @@
 
 <h2>@ViewData["Title"]</h2>
 
-<form asp-action="AssignRole" method="post">
-    <div class="form-group">
-        <label asp-for="UserId" class="control-label">User</label>
-        <select asp-for="UserId" class="form-control">
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+
+
+<!-- Form to assign a new role to a user -->
+<h3>Assign Role</h3>
+<form asp-action="AssignRole" method="post" class="p-4 border rounded shadow-sm bg-light">
+    <h4 class="mb-3">Assign Role to User</h4>
+
+    <div class="form-group mb-3">
+        <label for="userSearch" class="form-label">Search User</label>
+        <input type="text" id="userSearch" class="form-control" placeholder="Type to search..." onkeyup="filterUsers()" autocomplete="off">
+        <ul id="suggestionList" class="list-group mt-1"></ul>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="UserId" class="form-label">User</label>
+        <select asp-for="UserId" id="userSelect" class="form-select">
             <option value="">Select a user</option>
             @foreach (var user in Model.Users)
             {
@@ -18,22 +40,175 @@
         </select>
         <span asp-validation-for="UserId" class="text-danger"></span>
     </div>
-    <div class="form-group">
-        <label asp-for="Role" class="control-label">Role</label>
-        <select asp-for="Role" class="form-control">
+
+    <div class="form-group mb-3">
+        <label asp-for="Role" class="form-label">Role</label>
+        <select asp-for="Role" class="form-select">
             <option value="Admin">Admin</option>
             <option value="Student">Student</option>
             <option value="Instructor">Instructor</option>
         </select>
         <span asp-validation-for="Role" class="text-danger"></span>
     </div>
-    <div class="form-group">
+
+    <div class="form-group text-end">
         <input type="submit" value="Assign Role" class="btn btn-primary" />
     </div>
 </form>
 
+
+<br />
+<!-- Table to display existing users and their roles -->
+<h3 class="my-4">Existing Users and Their Roles</h3>
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>User</th>
+                <th>Roles</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var userWithRoles in Model.UsersWithRoles)
+            {
+                <tr>
+                    <td>@userWithRoles.UserName</td>
+                    <td>@string.Join(", ", userWithRoles.Roles)</td>
+                    <td>
+                        <!-- Button to remove role -->
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeRole('@userWithRoles.UserId', '@userWithRoles.Roles.FirstOrDefault()')">Remove Role</button>
+
+                        <!-- Button to update role (opens modal) -->
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateRoleModal" data-userid="@userWithRoles.UserId" data-username="@userWithRoles.UserName">Update Role</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal for updating role -->
+<div class="modal fade" id="updateRoleModal" tabindex="-1" aria-labelledby="updateRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateRoleModalLabel">Update Role for <span id="modalUserName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateRoleForm" asp-action="UpdateRole" method="post">
+                    <input type="hidden" name="userId" id="modalUserId" />
+                    <div class="mb-3">
+                        <label for="newRole" class="form-label">Select New Role</label>
+                        <select name="newRole" id="newRole" class="form-select">
+                            <option value="">Select Role</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Student">Student</option>
+                            <option value="Instructor">Instructor</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="submitUpdateForm()">Update Role</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
     }
+    <script>
+        function removeRole(userId, roleName) {
+            if (confirm('Are you sure you want to remove this role?')) {
+                var form = document.createElement('form');
+                form.method = 'post';
+                form.action = '@Url.Action("RemoveRole")';
+
+                var userIdInput = document.createElement('input');
+                userIdInput.type = 'hidden';
+                userIdInput.name = 'userId';
+                userIdInput.value = userId;
+
+                var roleNameInput = document.createElement('input');
+                roleNameInput.type = 'hidden';
+                roleNameInput.name = 'roleName';
+                roleNameInput.value = roleName;
+
+                form.appendChild(userIdInput);
+                form.appendChild(roleNameInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        var updateRoleModal = document.getElementById('updateRoleModal');
+        updateRoleModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var userId = button.getAttribute('data-userid');
+            var userName = button.getAttribute('data-username');
+
+            var modalUserName = updateRoleModal.querySelector('#modalUserName');
+            var modalUserId = updateRoleModal.querySelector('#modalUserId');
+
+            modalUserName.textContent = userName;
+            modalUserId.value = userId;
+        });
+
+        function submitUpdateForm() {
+            var form = document.getElementById('updateRoleForm');
+            form.submit();
+        }
+    </script>
+    <script>
+        var users = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Users.Select(u => new { u.Email })));
+
+        function filterUsers() {
+            var input, filter, list, i;
+            input = document.getElementById('userSearch');
+            filter = input.value.toLowerCase();
+            list = document.getElementById('suggestionList');
+            var options = document.getElementById('userSelect').getElementsByTagName('option');
+
+            list.innerHTML = '';
+
+            if (filter) {
+                for (i = 0; i < users.length; i++) {
+                    if (users[i].Email.toLowerCase().indexOf(filter) > -1) {
+                        var listItem = document.createElement('li');
+                        listItem.className = 'list-group-item list-group-item-action';
+                        listItem.textContent = users[i].Email;
+                        listItem.onclick = function() {
+                            input.value = this.textContent;
+                            selectUser(this.textContent);
+                            list.innerHTML = '';
+                        };
+                        list.appendChild(listItem);
+                    }
+                }
+            }
+        }
+
+        function selectUser(userEmail) {
+            var select = document.getElementById('userSelect');
+            var options = select.getElementsByTagName('option');
+
+            for (var i = 0; i < options.length; i++) {
+                if (options[i].textContent === userEmail) {
+                    select.value = options[i].value;
+                    break;
+                }
+            }
+        }
+    </script>
 }

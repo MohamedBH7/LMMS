@@ -118,7 +118,8 @@ namespace LMMS.Controllers
         {
             List<BookRequest> requests = new List<BookRequest>();
             var currentUserEmail = User.Identity?.Name;
-
+            if (currentUserEmail == null)
+                return NotFound("You Must Login");
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();

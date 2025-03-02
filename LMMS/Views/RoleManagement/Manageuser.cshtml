@@ -1,0 +1,154 @@
+﻿@model AssignRoleViewModel
+
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<!-- Filters -->
+<div class="mb-4">
+    <input type="text" id="searchInput" class="form-control" placeholder="Search by email..." onkeyup="filterTables()" autocomplete="off">
+    <select id="roleFilter" class="form-select mt-2" onchange="filterTables()">
+        <option value="">Filter by role</option>
+        <option value="Student">Student</option>
+        <option value="Instructor">Instructor</option>
+    </select>
+</div>
+
+<!-- Students Table -->
+<h3>Students</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>EmailConfirmed</th>
+            <th>Inactive Account</th>
+        </tr>
+    </thead>
+    <tbody id="studentsTableBody">
+        @foreach (var user in Model.Students)
+        {
+            <tr>
+                <td class="email">@user.Email</td>
+                <td class="role">
+                    <span class="badge bg-success">Student</span>
+                </td>
+                <td class="email-confirmed">
+                    @if (!user.EmailConfirmed)
+                    {
+                        <form asp-action="ConfirmAccount" method="post" style="display:inline;">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <button type="submit" class="btn btn-primary btn-sm">Confirm Email</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Confirmed</span>
+                    }
+                </td>
+                <td class="inactive-account">
+                    @if (user.EmailConfirmed)
+                    {
+                        <form asp-action="UnconfirmAccount" method="post" style="display:inline;">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <button type="submit" class="btn-danger btn-sm">Inactive Email</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Instructors Table -->
+<h3>Instructors</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>EmailConfirmed</th>
+            <th>Inactive Account</th>
+        </tr>
+    </thead>
+    <tbody id="instructorsTableBody">
+        @foreach (var user in Model.Instructors)
+        {
+            <tr>
+                <td class="email">@user.Email</td>
+                <td class="role">
+                    <span class="badge bg-secondary">Instructor</span>
+                </td>
+                <td class="email-confirmed">
+                    @if (!user.EmailConfirmed)
+                    {
+                        <form asp-action="ConfirmAccount" method="post" style="display:inline;">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <button type="submit" class="btn btn-primary btn-sm">Confirm Email</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Confirmed</span>
+                    }
+                </td>
+                <td class="inactive-account">
+                    @if (user.EmailConfirmed)
+                    {
+                        <form asp-action="UnconfirmAccount" method="post" style="display:inline;">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <button type="submit" class="btn-danger btn-sm">Inactive Email</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    function filterTables() {
+        var input = document.getElementById('searchInput').value.toLowerCase();
+        var roleFilter = document.getElementById('roleFilter').value.toLowerCase();
+
+        var studentsTableBody = document.getElementById('studentsTableBody');
+        var instructorsTableBody = document.getElementById('instructorsTableBody');
+
+        filterTable(studentsTableBody, input, roleFilter);
+        filterTable(instructorsTableBody, input, roleFilter);
+    }
+
+    function filterTable(tableBody, input, roleFilter) {
+        var rows = tableBody.getElementsByTagName('tr');
+
+        for (var i = 0; i < rows.length; i++) {
+            var email = rows[i].getElementsByClassName('email')[0].textContent.toLowerCase();
+            var role = rows[i].getElementsByClassName('role')[0].textContent.toLowerCase();
+
+            if (
+                (input === '' || email.includes(input)) &&
+                (roleFilter === '' || role.includes(roleFilter))
+            ) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+</script>
