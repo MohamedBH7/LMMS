@@ -8,15 +8,9 @@ namespace LMMS.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly string _connectionString = "Server=DESKTOP-8EVQE8E;Database=aspnet-LMMS-7fc7690b-1ba3-432f-9f4f-99c7a2dbeb77;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=true;";
         bool IsDevelopment = false;
-        public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
-        {
-            _logger = logger;
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
-
-        }
+  
 
         public IActionResult Index()
         {
@@ -80,8 +74,8 @@ namespace LMMS.Controllers
                 List<BookViewModel> books = new List<BookViewModel>();
                 using (SqlConnection conn = new SqlConnection(_connectionString))
                 {
-                    string query = "SELECT Id, Title, Author, Description, Quantity FROM Books";
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                string query = "SELECT * FROM Books"; // Show only available books
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         conn.Open();
                         using (SqlDataReader reader = cmd.ExecuteReader())

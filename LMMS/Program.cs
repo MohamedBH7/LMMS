@@ -58,12 +58,34 @@ static async Task CreateRolesAndAdminUser(RoleManager<IdentityRole> roleManager,
     {
         await roleManager.CreateAsync(new IdentityRole("Admin"));
     }
-
+    if (!await roleManager.RoleExistsAsync("Student"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Student"));
+    }
+    if (!await roleManager.RoleExistsAsync("Instructor"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Instructor"));
+    }
     // Assign the Admin role to a specific user (change email as needed)
-    var adminEmail = "admin@example.com";
+    var adminEmail = "admin@utb.com";
+    var InstructorEmail = "Instructor@utb.com";
+    var StudentEmail = "bh@utb.com";
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    var InstructorUser = await userManager.FindByEmailAsync(InstructorEmail);
+    var StudentUser = await userManager.FindByEmailAsync(StudentEmail);
+
     if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
     {
         await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+
+
+    if (InstructorUser != null && !await userManager.IsInRoleAsync(InstructorUser, "Instructor"))
+    {
+        await userManager.AddToRoleAsync(InstructorUser, "Instructor");
+    }
+    if (StudentUser != null && !await userManager.IsInRoleAsync(StudentUser, "Student"))
+    {
+        await userManager.AddToRoleAsync(StudentUser, "Student");
     }
 }
