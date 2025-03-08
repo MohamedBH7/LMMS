@@ -36,6 +36,10 @@
                     <th>Title</th>
                     <th>Author</th>
                     <th>Available Quantity</th>
+                    <th>Section</th>
+                    <th>Edition</th>
+                    <th>Year</th>
+                    <th>Publisher</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -46,6 +50,10 @@
                         <td>@book.Title</td>
                         <td>@book.Author</td>
                         <td>@book.Quantity</td>
+                        <td>@book.SectionName</td>
+                        <td>@book.Edition</td>
+                        <td>@book.Year</td>
+                        <td>@book.Publisher</td>
                         <td>
                             <form asp-action="RequestBorrow" method="post" class="d-inline">
                                 <input type="hidden" name="bookId" value="@book.Id" />

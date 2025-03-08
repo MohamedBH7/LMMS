@@ -1,8 +1,10 @@
-﻿using LMMS.Models;
+﻿using System.Net;
+using LMMS.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace LMMS.Controllers
 {
@@ -24,7 +26,7 @@ namespace LMMS.Controllers
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string query = "SELECT Id, Title, Author, Quantity FROM Books WHERE Quantity > 0"; // Show only available books
+                string query = "SELECT B.Id, B.Title, B.Author, B.Quantity,B.Description ,BC.SectionName FROM Books B inner join BookSection BC  on BC.Id = B.SectionId WHERE Quantity > 0"; // Show only available books
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     using (SqlDataReader reader = cmd.ExecuteReader())
@@ -33,10 +35,18 @@ namespace LMMS.Controllers
                         {
                             books.Add(new BookViewModel
                             {
-                                Id = reader.GetInt32(0),
-                                Title = reader.GetString(1),
-                                Author = reader.GetString(2),
-                                Quantity = reader.GetInt32(3)
+                                Id = reader.GetInt32(0), // B.Id
+                                Title = reader.GetString(1), // B.Title
+                                Author = reader.GetString(2), // B.Author
+                                Quantity = reader.GetInt32(3), // B.Quantity
+                                Description = reader.GetString(4), // B.Description
+                                SectionName = reader.GetString(5), // BC.SectionName
+                                Edition = reader.GetString(5), 
+                                Publisher = reader.GetString(5), 
+                                Year = reader.GetInt32(3), 
+                                                              
+
+
                             });
                         }
                     }
@@ -335,24 +345,56 @@ namespace LMMS.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult ApproveBorrowRequests()
         {
-            List<AdminBorrowedBookViewModel> borrowRequests = new List<AdminBorrowedBookViewModel>();
+            List<AdminBorrowedBookViewModel> borrowRequestsWithLimit = new List<AdminBorrowedBookViewModel>();
+            List<AdminBorrowedBookViewModel> borrowRequestsPending = new List<AdminBorrowedBookViewModel>();
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string query = @"
-                SELECT bb.Id, bb.UserEmail, bb.BookId, bb.BorrowDate, bb.ReturnDate, bb.Status, b.Title AS BookTitle
-                FROM BorrowedBooks bb
-                JOIN Books b ON bb.BookId = b.Id
-                WHERE bb.Status = 'Pending'";
 
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                // Fetch borrow requests where the student has 3 approved books and cannot borrow more.
+                string borrowRequestsWithLimitQuery = @"
+            SELECT bb.Id, bb.UserEmail, bb.BookId, bb.BorrowDate, bb.ReturnDate, bb.Status, b.Title AS BookTitle
+            FROM BorrowedBooks bb
+            JOIN Books b ON bb.BookId = b.Id
+            WHERE bb.Status = 'Pending' AND 
+                  (SELECT COUNT(*) FROM BorrowedBooks WHERE UserEmail = bb.UserEmail AND Status = 'Approved') >= 3";
+
+                using (SqlCommand cmd = new SqlCommand(borrowRequestsWithLimitQuery, conn))
                 {
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            borrowRequests.Add(new AdminBorrowedBookViewModel
+                            borrowRequestsWithLimit.Add(new AdminBorrowedBookViewModel
+                            {
+                                Id = reader.GetInt32(0),
+                                UserEmail = reader.GetString(1),
+                                BookId = reader.GetInt32(2),
+                                BorrowDate = reader.GetDateTime(3),
+                                ReturnDate = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4),
+                                Status = reader.GetString(5),
+                                BookTitle = reader.GetString(6)
+                            });
+                        }
+                    }
+                }
+
+                // Fetch pending borrow requests for students who haven't reached the borrowing limit.
+                string borrowRequestsPendingQuery = @"
+            SELECT bb.Id, bb.UserEmail, bb.BookId, bb.BorrowDate, bb.ReturnDate, bb.Status, b.Title AS BookTitle
+            FROM BorrowedBooks bb
+            JOIN Books b ON bb.BookId = b.Id
+            WHERE bb.Status = 'Pending' AND 
+                  (SELECT COUNT(*) FROM BorrowedBooks WHERE UserEmail = bb.UserEmail AND Status = 'Approved') < 3";
+
+                using (SqlCommand cmd = new SqlCommand(borrowRequestsPendingQuery, conn))
+                {
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            borrowRequestsPending.Add(new AdminBorrowedBookViewModel
                             {
                                 Id = reader.GetInt32(0),
                                 UserEmail = reader.GetString(1),
@@ -367,22 +409,118 @@ namespace LMMS.Controllers
                 }
             }
 
-            return View(borrowRequests);
+            // Pass both lists in a Tuple to the view
+            return View(Tuple.Create(borrowRequestsWithLimit, borrowRequestsPending));
         }
+
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public IActionResult ApproveRequest(int borrowId)
         {
+            if(borrowId == null || borrowId < 0)
+            {
+                throw new Exception("borrowId Is Null");
+            }
+            int Id = 0;
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
+
+                        #region Check Valid
+
+                        // Get Book Id and UserEmail based on User's Borrowed Books
+                        string GetBook_Id = "SELECT BookId AS Id, UserEmail FROM BorrowedBooks WHERE Id = @Id";
+                        string userEmail = string.Empty;
+
+                        using (SqlCommand cmd = new SqlCommand(GetBook_Id, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Id", borrowId);  // Assuming 'borrowId' is passed in.
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    Id = reader.GetInt32(0);  // Get BookId
+                                    userEmail = reader.GetString(1);  // Get UserEmail
+                                }
+
+                            }
+                        }
+
+                        // Check if Id is valid
+                        if (Id <= 0)
+                        {
+                            TempData["ErrorMessage"] = "Invalid Book ID.";
+                            return RedirectToAction("StudentBorrowRequests");
+                        }
+
+                        // Check if the book exists and has a quantity greater than zero
+                        string bookQuery = "SELECT Quantity FROM Books WHERE Id = @BookId";
+                        int quantity = 0;
+
+                        using (SqlCommand bookCmd = new SqlCommand(bookQuery, conn))
+                        {
+                            bookCmd.Parameters.AddWithValue("@BookId", Id);
+                            quantity = (int)bookCmd.ExecuteScalar();  // Execute the query and get the book's quantity.
+
+                            if (quantity <= 0)
+                            {
+                                TempData["ErrorMessage"] = "Book is not available for borrowing.";
+                                return RedirectToAction("ApproveBorrowRequests");
+                            }
+                        }
+
+                        // Check the number of approved books
+                        string approvedQuery = "SELECT COUNT(*) FROM BorrowedBooks WHERE UserEmail = @UserEmail AND Status = 'Approved'";
+                        int approvedCount = 0;
+
+                        using (SqlCommand approvedCmd = new SqlCommand(approvedQuery, conn))
+                        {
+                            approvedCmd.Parameters.AddWithValue("@UserEmail", userEmail);
+                            approvedCount = (int)approvedCmd.ExecuteScalar();  // Execute query and get the number of approved books.
+                        }
+
+                        // Check the total number of approved and pending books
+                        string totalQuery = "SELECT COUNT(*) FROM BorrowedBooks WHERE UserEmail = @UserEmail AND (Status = 'Approved' OR Status = 'Pending')";
+                        int totalCount = 0;
+
+                        using (SqlCommand totalCmd = new SqlCommand(totalQuery, conn))
+                        {
+                            totalCmd.Parameters.AddWithValue("@UserEmail", userEmail);
+                            totalCount = (int)totalCmd.ExecuteScalar();  // Execute query and get the total number of approved and pending books.
+                        }
+
+                        // Check if the user has reached the approved books limit (3 approved books max)
+                        if (approvedCount >= 3)
+                        {
+                            TempData["ErrorMessage"] = $"The student with email {userEmail} has already been approved for 3 books. They cannot borrow more than 3 approved books at the same time.";
+                            return RedirectToAction("ApproveBorrowRequests");
+                        }
+                        // Check if the user has reached the total approved + pending books limit (3 max)
+                        else if (approvedCount == 2)
+                        {
+                            TempData["WarningMessage"] = $"The student with email {userEmail} has already borrowed 2 books. This will be the last request until they return one book.";
+                        }
+                        else if (approvedCount == 1)
+                        {
+                            TempData["WarningMessage"] = $"The student with email {userEmail} has already borrowed 1 book. They can borrow 2 more books before reaching the limit.";
+                        }
+
+
+                #endregion
 
                 // Begin a transaction to ensure both updates are applied atomically
                 using (SqlTransaction transaction = conn.BeginTransaction())
                 {
                     try
                     {
+
+
+
+
+
+                      
                         // Update the status of the borrow request
                         string updateBorrowQuery = "UPDATE BorrowedBooks SET Status = 'Approved' WHERE Id = @BorrowId";
                         using (SqlCommand cmd = new SqlCommand(updateBorrowQuery, conn, transaction))
@@ -401,6 +539,7 @@ namespace LMMS.Controllers
                             cmd.Parameters.AddWithValue("@BorrowId", borrowId);
                             cmd.ExecuteNonQuery();
                         }
+                        TempData["SuccessMessage"] = "Your borrow request has been successfully submitted!";
 
                         // Commit the transaction
                         transaction.Commit();
@@ -412,6 +551,8 @@ namespace LMMS.Controllers
                         throw;
                     }
                 }
+
+                conn.Close();
             }
 
             return RedirectToAction("ApproveBorrowRequests");
@@ -453,6 +594,8 @@ namespace LMMS.Controllers
 
                         // Commit the transaction
                         transaction.Commit();
+                        TempData["SuccessMessage"] = "Book Returned successfully!";
+
                     }
                     catch
                     {
@@ -461,6 +604,7 @@ namespace LMMS.Controllers
                         throw;
                     }
                 }
+                conn.Close();
             }
 
             return RedirectToAction("ApproveBorrowRequests");
@@ -504,7 +648,8 @@ namespace LMMS.Controllers
                 SELECT bb.Id, bb.UserEmail, bb.BookId, bb.BorrowDate, bb.ReturnDate, bb.Status, b.Title AS BookTitle
                 FROM BorrowedBooks bb
                 JOIN Books b ON bb.BookId = b.Id
-                WHERE bb.UserEmail = @UserEmail"; using (SqlCommand cmd = new SqlCommand(query, conn))
+                WHERE bb.UserEmail = @UserEmail"; 
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@UserEmail", User.Identity.Name);
                     using (var reader = cmd.ExecuteReader())

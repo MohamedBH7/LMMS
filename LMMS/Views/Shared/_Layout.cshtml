@@ -58,6 +58,8 @@
                         </li>
                                 }
                         <!-- Dropdown Menu for Additional Pages -->
+                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Student"))
+                        {
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Student
@@ -71,6 +73,7 @@
 
                             </ul>
                         </li>
+                        }
 
 
 

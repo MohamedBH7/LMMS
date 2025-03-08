@@ -1,9 +1,32 @@
-﻿@model List<AdminBorrowedBookViewModel>
+﻿@model Tuple<List<AdminBorrowedBookViewModel>, List<AdminBorrowedBookViewModel>>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["WarningMessage"]
+    </div>
+}
 
 <div class="container mt-4">
     <h2 class="text-center">Approve Borrow Requests</h2>
 
-    @if (Model.Any())
+    @* Display the borrow requests of students who have already borrowed 3 books *@
+    <h4>Students who have already borrowed 3 books and cannot borrow more:</h4>
+    @if (Model.Item1.Any())
     {
         <table class="table table-striped">
             <thead>
@@ -17,7 +40,52 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var book in Model)
+                @foreach (var book in Model.Item1)
+                {
+                    <tr>
+                        <td>@book.BookTitle</td>
+                        <td>@book.UserEmail</td>
+                        <td>@book.BorrowDate.ToString("yyyy-MM-dd")</td>
+                        <td>@(book.ReturnDate.HasValue ? book.ReturnDate.Value.ToString("yyyy-MM-dd") : "Not Returned")</td>
+                        <td>@book.Status</td>
+                        <td>
+                            @if (book.Status == "Pending")
+                            {
+                                <form asp-action="ApproveRequest" method="post" class="d-inline">
+                                    <input type="hidden" name="borrowId" value="@book.Id" />
+                                    <button type="submit" class="btn btn-success btn-sm" disabled>Approve (Limit Reached)</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-center">No students have already borrowed 3 books.</p>
+    }
+
+    <hr />
+
+    @* Display the pending borrow requests for students who have not yet reached the borrowing limit *@
+    <h4>Pending Borrow Requests (Not yet at the borrowing limit):</h4>
+    @if (Model.Item2.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>User Email</th>
+                    <th>Borrow Date</th>
+                    <th>Return Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var book in Model.Item2)
                 {
                     <tr>
                         <td>@book.BookTitle</td>
@@ -48,6 +116,6 @@
     }
     else
     {
-        <p class="text-center">There are no borrow requests pending approval.</p>
+        <p class="text-center">There are no pending borrow requests.</p>
     }
 </div>
