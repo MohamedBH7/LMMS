@@ -115,7 +115,7 @@ namespace LMMS.Controllers
 
         #region Instructor After Login
         [Authorize(Roles = "Admin")]
-        [HttpPost]
+        [HttpGet]
         public IActionResult BookRequests()
         {
             List<BookRequest> requests = new List<BookRequest>();
@@ -129,11 +129,10 @@ namespace LMMS.Controllers
                     SELECT br.*, bs.SectionName 
                     FROM Books_Request_To_Add br
                     LEFT JOIN BookSection bs ON br.SectionId = bs.Id
-                    WHERE br.Email = @Email";
+                    ";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    cmd.Parameters.AddWithValue("@Email", currentUserEmail);
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -216,7 +215,7 @@ namespace LMMS.Controllers
 
         // API to Reject a Book Request
         [HttpPut("api/bookrequests/reject/{id}")]
-        [Authorize(Roles = "Instructor")]
+        [Authorize(Roles = "Admin")]
         public IActionResult RejectRequest(int id)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -239,7 +238,7 @@ namespace LMMS.Controllers
 
         // API to Delete a Book Request
         [HttpPut("api/bookrequests/delete/{id}")]
-        [Authorize(Roles = "Instructor")]
+        [Authorize(Roles = "Admin")]
         public IActionResult DeleteRequest(int id)
         {
             
@@ -261,7 +260,7 @@ namespace LMMS.Controllers
         }
 
         [HttpPut("api/bookrequests/ApproveRequest/{id}")]
-        [Authorize(Roles = "Instructor")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveRequest(int id, [FromBody] ApproveRequestModel request)
         {
             try
@@ -391,7 +390,7 @@ namespace LMMS.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Instructor")]
+        [Authorize(Roles = "Admin")]
         public IActionResult AddSection(BookSection section)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -408,7 +407,7 @@ namespace LMMS.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Instructor")]
+        [Authorize(Roles = "Admin")]
         public IActionResult UpdateSection(BookSection section)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -426,7 +425,7 @@ namespace LMMS.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Instructor")]
+        [Authorize(Roles = "Admin")]
         public IActionResult RemoveSection(int id)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))

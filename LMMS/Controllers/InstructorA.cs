@@ -20,7 +20,7 @@ namespace LMMS.Controllers
 
         // API to Reject a Book Request
         [HttpPut("bookrequests/reject/{id}")]
-        [Authorize(Roles = "Instructor")]
+        [Authorize(Roles = "Admin")]
         public IActionResult RejectRequest(int id)
         {
             try
@@ -50,7 +50,7 @@ namespace LMMS.Controllers
 
         // API to Delete a Book Request
         [HttpDelete("bookrequests/delete/{id}")]
-        [Authorize(Roles = "Instructor")]
+        [Authorize(Roles = "Admin")]
         public IActionResult DeleteRequest(int id)
         {
             try
@@ -82,7 +82,7 @@ namespace LMMS.Controllers
 
         // API to Reject a Book Request
         [HttpPut("bookrequests/ApprovedRequest/{id}")]
-        [Authorize(Roles = "Instructor")]
+        [Authorize(Roles = "Admin")]
         public IActionResult ApprovedRequest(int id)
         {
             try

@@ -162,9 +162,7 @@
 
                 if (response.ok) {
                     document.getElementById(`request-${actionId}`).remove();
-                    // Show success toast
-                    const toastMessage = actionType === 'approve' ? "Book approved and added!" : "Action completed successfully!";
-                    showToast(toastMessage);
+                    alert(actionType === 'approve' ? "Book approved and added!" : "Action completed successfully!");
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -172,19 +170,6 @@
 
             bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
         });
-
-        // Function to show the toast message
-        function showToast(message) {
-            const toastElement = document.getElementById('toast');
-            const toastBody = document.getElementById('toast-message');
-            toastBody.innerText = message;
-
-            const toast = new bootstrap.Toast(toastElement, {
-                delay: 3000 // Auto hide after 3 seconds
-            });
-
-            toast.show();
-        }
 
         // Get the state class for badges
         function GetStateClass(state) {
@@ -238,17 +223,4 @@
             rows.forEach(row => table.appendChild(row));
         }
     </script>
-
-    <!-- Toast notification container -->
-    <div id="toast-container" class="position-fixed top-0 end-0 p-3">
-        <div id="toast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" style="display: none;">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <span id="toast-message">Action completed successfully!</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
 }
-
