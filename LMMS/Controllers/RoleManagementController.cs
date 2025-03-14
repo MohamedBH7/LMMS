@@ -95,6 +95,37 @@ namespace LMMS.Controllers
 
             return View(model);
         }
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("ManageUser");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("ManageUser");
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "User deleted successfully.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to delete user.";
+            }
+
+            return RedirectToAction("ManageUser");
+        }
 
         [Authorize(Roles = "Admin")]
 

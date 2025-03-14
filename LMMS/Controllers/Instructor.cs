@@ -97,7 +97,7 @@ namespace LMMS.Controllers
                     }
                 }
 
-                return RedirectToAction("BookRequests");
+                return RedirectToAction("RequestBook");
             
 
            // return View(bookRequest);
@@ -114,6 +114,8 @@ namespace LMMS.Controllers
 
 
         #region Instructor After Login
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
         public IActionResult BookRequests()
         {
             List<BookRequest> requests = new List<BookRequest>();

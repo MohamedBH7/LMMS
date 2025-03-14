@@ -37,8 +37,9 @@
         <tr>
             <th>Email</th>
             <th>Role</th>
-            <th>EmailConfirmed</th>
+            <th>Email Confirmed</th>
             <th>Inactive Account</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody id="studentsTableBody">
@@ -71,6 +72,13 @@
                         </form>
                     }
                 </td>
+                <td class="actions">
+                    <!-- Delete Button -->
+                    <form asp-action="DeleteUser" method="post" style="display:inline;">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
             </tr>
         }
     </tbody>
@@ -83,8 +91,9 @@
         <tr>
             <th>Email</th>
             <th>Role</th>
-            <th>EmailConfirmed</th>
+            <th>Email Confirmed</th>
             <th>Inactive Account</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody id="instructorsTableBody">
@@ -116,6 +125,13 @@
                             <button type="submit" class="btn-danger btn-sm">Inactive Email</button>
                         </form>
                     }
+                </td>
+                <td class="actions">
+                    <!-- Delete Button -->
+                    <form asp-action="DeleteUser" method="post" style="display:inline;">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
                 </td>
             </tr>
         }
