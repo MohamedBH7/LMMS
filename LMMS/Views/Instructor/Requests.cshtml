@@ -11,6 +11,7 @@
 <table id="pendingRequestsTable" class="table table-striped table-hover">
     <thead class="table-dark">
         <tr>
+            <th>Course Code</th>
             <th>Title</th>
             <th>Author</th>
             <th>Published Year</th>
@@ -22,6 +23,7 @@
         @foreach (var request in Model.Where(r => r.State == "Pending"))
         {
             <tr id="request-@request.Id">
+                <td>@request.CourseCode</td>
                 <td>@request.Title</td>
                 <td>@request.Author</td>
                 <td>@request.PublishedYear</td>
@@ -40,6 +42,7 @@
 <table id="processedRequestsTable" class="table table-striped table-hover">
     <thead class="table-dark">
         <tr>
+            <th>Course Code</th>
             <th>Title</th>
             <th>Author</th>
             <th>Published Year</th>
@@ -51,6 +54,7 @@
         @foreach (var request in Model.Where(r => r.State != "Pending"))
         {
             <tr id="request-@request.Id">
+                <td>@request.CourseCode</td>
                 <td>@request.Title</td>
                 <td>@request.Author</td>
                 <td>@request.PublishedYear</td>
@@ -65,15 +69,33 @@
     </tbody>
 </table>
 
-@section Scripts
-{
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
+
     <script>
         $(document).ready(function () {
+            // Initialize DataTables for the Pending Requests table
+            $('#pendingRequestsTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                order: [[0, 'asc']], // Default sort by Course Code
+                responsive: true
+            });
 
-
-           
-
-           
+            // Initialize DataTables for the Processed Requests table
+            $('#processedRequestsTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                order: [[0, 'asc']], // Default sort by Course Code
+                responsive: true
+            });
         });
     </script>
 }

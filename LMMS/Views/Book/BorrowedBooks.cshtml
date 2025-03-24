@@ -2,6 +2,7 @@
 
 <div class="container mt-5">
     <h2 class="text-center mb-4 animate__animated animate__fadeInDown">Borrowed Books</h2>
+
     @if (TempData["ErrorMessage"] != null)
     {
         <div class="alert alert-danger">
@@ -15,12 +16,19 @@
             @TempData["SuccessMessage"]
         </div>
     }
+
     @if (TempData["WarningMessage"] != null)
     {
         <div class="alert alert-warning">
             @TempData["WarningMessage"]
         </div>
     }
+
+    <!-- Search Input -->
+    <div class="mb-3">
+        <input type="text" id="borrowSearch" class="form-control" placeholder="Search Borrowed Books" onkeyup="filterBorrowedBooks()" />
+    </div>
+
     <div class="table-responsive animate__animated animate__fadeInUp">
         <table id="borrowTable" class="table table-striped table-bordered">
             <thead class="table-primary">
@@ -37,8 +45,8 @@
                 @foreach (var book in Model)
                 {
                     <tr>
-                        <td>@book.UserEmail</td>
-                        <td>@book.BookId</td>
+                        <td class="user-email">@book.UserEmail</td>
+                        <td class="book-id">@book.BookId</td>
                         <td>@book.BorrowDate.ToString("yyyy-MM-dd")</td>
                         <td>@(book.ReturnDate.HasValue ? book.ReturnDate.Value.ToString("yyyy-MM-dd") : "Not Returned")</td>
                         <td>
@@ -72,27 +80,39 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
 <script>
     $(document).ready(function () {
-        // Custom sorting for the Status column
-        $.fn.dataTable.ext.order['status-sort'] = function (settings, col) {
-            return this.api().column(col, { order: 'index' }).nodes().map(function (td, i) {
-                switch ($(td).text()) {
-                    case 'Pending': return 1;
-                    case 'Approved': return 2;
-                    case 'Returned': return 3;
-                    default: return 4;
-                }
-            });
-        };
-
+        // Initialize DataTable
         $('#borrowTable').DataTable({
             "columnDefs": [
-                { "orderable": false, "targets": 5 }, // Make the Actions column non-sortable
-                { "orderDataType": "status-sort", "targets": 4 } // Apply custom sorting to the Status column
+                { "orderable": false, "targets": 5 } // Make the Actions column non-sortable
             ]
         });
     });
+
+    // Function to filter the borrowed books table
+    function filterBorrowedBooks() {
+        // Get the input value for search
+        var input = document.getElementById('borrowSearch').value.toLowerCase();
+
+        // Get the table rows
+        var table = document.getElementById("borrowTable");
+        var rows = table.getElementsByTagName('tr');
+
+        // Loop through each row and filter based on the search input
+        for (var i = 1; i < rows.length; i++) { // Skip the header row
+            var userEmail = rows[i].getElementsByClassName("user-email")[0].textContent.toLowerCase();
+            var bookId = rows[i].getElementsByClassName("book-id")[0].textContent.toLowerCase();
+
+            // If the user email or book ID matches the search input, show the row, else hide it
+            if (userEmail.includes(input) || bookId.includes(input)) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    }
 </script>
 
 <style>

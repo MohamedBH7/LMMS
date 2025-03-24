@@ -51,7 +51,7 @@
                 </td>
                 <td>
                     <button class="btn btn-danger" onclick="openConfirmModal('reject', @request.Id)">Reject</button>
-                    <button class="btn btn-success" onclick="openConfirmModal('approve', @request.Id, '@request.Title', '@request.Author')">Approve</button>
+                    <button class="btn btn-success" onclick="openConfirmModal('approve', @request.Id, '@request.Title', '@request.Author',@request.CourseCode)">Approve</button>
                     <button class="btn btn-secondary" onclick="openConfirmModal('delete', @request.Id)">Delete</button>
                 </td>
             </tr>

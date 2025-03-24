@@ -24,11 +24,16 @@
 <div class="container mt-4">
     <h2 class="text-center">Approve Borrow Requests</h2>
 
-    @* Display the borrow requests of students who have already borrowed 3 books *@
+    <!-- Search Input for First Table -->
+    <div class="mb-3">
+        <input type="text" id="borrowSearch1" class="form-control" placeholder="Search Borrow Requests (Limit Reached)" onkeyup="filterTable(1)" />
+    </div>
+
+    <!-- Display the borrow requests of students who have already borrowed 3 books -->
     <h4>Students who have already borrowed 3 books and cannot borrow more:</h4>
     @if (Model.Item1.Any())
     {
-        <table class="table table-striped">
+        <table class="table table-striped" id="borrowedBooksTable1">
             <thead>
                 <tr>
                     <th>Title</th>
@@ -39,12 +44,12 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="borrowedBooksTableBody1">
                 @foreach (var book in Model.Item1)
                 {
                     <tr>
-                        <td>@book.BookTitle</td>
-                        <td>@book.UserEmail</td>
+                        <td class="book-title">@book.BookTitle</td>
+                        <td class="user-email">@book.UserEmail</td>
                         <td>@book.BorrowDate.ToString("yyyy-MM-dd")</td>
                         <td>@(book.ReturnDate.HasValue ? book.ReturnDate.Value.ToString("yyyy-MM-dd") : "Not Returned")</td>
                         <td>@book.Status</td>
@@ -69,11 +74,16 @@
 
     <hr />
 
-    @* Display the pending borrow requests for students who have not yet reached the borrowing limit *@
+    <!-- Search Input for Second Table -->
+    <div class="mb-3">
+        <input type="text" id="borrowSearch2" class="form-control" placeholder="Search Pending Borrow Requests" onkeyup="filterTable(2)" />
+    </div>
+
+    <!-- Display the pending borrow requests for students who have not yet reached the borrowing limit -->
     <h4>Pending Borrow Requests (Not yet at the borrowing limit):</h4>
     @if (Model.Item2.Any())
     {
-        <table class="table table-striped">
+        <table class="table table-striped" id="borrowedBooksTable2">
             <thead>
                 <tr>
                     <th>Title</th>
@@ -84,12 +94,12 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="borrowedBooksTableBody2">
                 @foreach (var book in Model.Item2)
                 {
                     <tr>
-                        <td>@book.BookTitle</td>
-                        <td>@book.UserEmail</td>
+                        <td class="book-title">@book.BookTitle</td>
+                        <td class="user-email">@book.UserEmail</td>
                         <td>@book.BorrowDate.ToString("yyyy-MM-dd")</td>
                         <td>@(book.ReturnDate.HasValue ? book.ReturnDate.Value.ToString("yyyy-MM-dd") : "Not Returned")</td>
                         <td>@book.Status</td>
@@ -119,3 +129,27 @@
         <p class="text-center">There are no pending borrow requests.</p>
     }
 </div>
+
+<script>
+    function filterTable(tableNumber) {
+        // Get the input value for the specific table (based on tableNumber)
+        var input = document.getElementById('borrowSearch' + tableNumber).value.toLowerCase();
+
+        // Get the table body based on tableNumber
+        var tableBody = document.getElementById('borrowedBooksTableBody' + tableNumber);
+        var rows = tableBody.getElementsByTagName('tr'); // Get all rows in the table body
+
+        // Loop through each row and filter based on the search input
+        for (var i = 0; i < rows.length; i++) {
+            var title = rows[i].getElementsByClassName('book-title')[0].textContent.toLowerCase();
+            var email = rows[i].getElementsByClassName('user-email')[0].textContent.toLowerCase();
+
+            // If the title or email matches the search input, show the row, else hide it
+            if (title.includes(input) || email.includes(input)) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+</script>

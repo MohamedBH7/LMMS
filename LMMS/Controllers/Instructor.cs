@@ -33,6 +33,7 @@ namespace LMMS.Controllers
             try
             {
                 List<BookSection> sections = new List<BookSection>();
+                List<UtbCourses> Courses = new List<UtbCourses>();
                 using (SqlConnection conn = new SqlConnection(_connectionString))
                 {
                     conn.Open();
@@ -53,8 +54,9 @@ namespace LMMS.Controllers
                             }
                         }
                     }
+                   
                 }
-
+                
                 // Check if there are any sections available
                 if (sections.Count == 0)
                 {
@@ -64,6 +66,45 @@ namespace LMMS.Controllers
                 {
                     ViewBag.Sections = new SelectList(sections, "Id", "SectionName");
                 }
+                using (SqlConnection conn = new SqlConnection(_connectionString))
+                {
+                    conn.Open();
+
+                    // Fetch book sections from the database
+                    string sectionQuery = "SELECT * FROM UtbCourses";
+                    using (SqlCommand cmd = new SqlCommand(sectionQuery, conn))
+                    {
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Courses.Add(new UtbCourses
+                                {
+                                    ID = Convert.ToInt32(reader["ID"]),
+                                    CourseCode = reader["CourseCode"].ToString(),
+                                    CourseTitle = reader["CourseTitle"].ToString(),
+                                    CourseDescription = reader["CourseDescription"].ToString()
+                                });
+                            }
+                        }
+                    }
+
+                }
+                if(Courses.Count == 0)
+                {
+                    ViewData["ErrorMessage"] = "No Courses available. Please contact the administrator.";
+
+                }
+                else
+                {
+                    ViewBag.Courses = new SelectList(Courses, "ID", "CourseCode", "CourseTitle", "CourseDescription");
+
+                }
+
+
+
+
+
             }
             catch (Exception ex)
             {
@@ -74,6 +115,39 @@ namespace LMMS.Controllers
             return View();
         }
 
+        [HttpGet]
+        public JsonResult SearchCourses(string query)
+       {
+            List<UtbCourses> courses = new List<UtbCourses>();
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string searchQuery = @"
+            SELECT * FROM UtbCourses 
+            WHERE CourseCode LIKE @query OR CourseTitle LIKE @query OR CourseDescription LIKE @query";
+
+                using (SqlCommand cmd = new SqlCommand(searchQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@query", "%" + query + "%");
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            courses.Add(new UtbCourses
+                            {
+                                ID = Convert.ToInt32(reader["ID"]),
+                                CourseCode = reader["CourseCode"].ToString(),
+                                CourseTitle = reader["CourseTitle"].ToString(),
+                                CourseDescription = reader["CourseDescription"].ToString()
+                            });
+                        }
+                    }
+                }
+            }
+
+            return Json(courses);
+        }
 
 
 
@@ -86,13 +160,14 @@ namespace LMMS.Controllers
                 using (SqlConnection conn = new SqlConnection(_connectionString))
                 {
                     conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Books_Request_To_Add (Title, Author, PublishedYear, Email, SectionId, State) VALUES (@Title, @Author, @PublishedYear, @Email, @SectionId, 'Pending')", conn))
+                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Books_Request_To_Add (Title, Author, PublishedYear, Email, SectionId, State ,CourseCode) VALUES (@Title, @Author, @PublishedYear, @Email, @SectionId, 'Pending' ,@CourseCode)", conn))
                     {
                         cmd.Parameters.AddWithValue("@Title", bookRequest.Title);
                         cmd.Parameters.AddWithValue("@Author", bookRequest.Author);
                         cmd.Parameters.AddWithValue("@PublishedYear", (object)bookRequest.PublishedYear ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@Email", currentUserEmail);
                         cmd.Parameters.AddWithValue("@SectionId", bookRequest.SectionId);
+                        cmd.Parameters.AddWithValue("@CourseCode", bookRequest.CourseCode);
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -192,7 +267,8 @@ namespace LMMS.Controllers
                                 RequestDate = Convert.ToDateTime(reader["RequestDate"]),
                                 State = reader["State"].ToString(),
                                 SectionId = Convert.ToInt32(reader["SectionId"]),
-                                SectionName = reader["SectionName"].ToString()
+                                SectionName = reader["SectionName"].ToString(),
+                                CourseCode = reader["CourseCode"].ToString()
                             });
                         }
                     }

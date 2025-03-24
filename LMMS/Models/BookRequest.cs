@@ -11,6 +11,9 @@ namespace LMMS.Models
         public string Email { get; set; }
         public DateTime RequestDate { get; set; }
         public string State { get; set; }
+        public string CourseTitle { get; set; }
+        public string CourseDescription { get; set; }
+        public string CourseCode { get; set; }
 
         // Foreign key to BookSection
         public int SectionId { get; set; }

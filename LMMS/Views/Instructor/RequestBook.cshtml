@@ -5,6 +5,7 @@
 }
 
 <h1>Request a Book</h1>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <form method="post" action="@Url.Action("RequestBook", "Instructor")">
     @if (!string.IsNullOrEmpty(ViewData["ErrorMessage"]?.ToString()))
@@ -14,6 +15,7 @@
         </div>
     }
 
+    <!-- Book Request Fields -->
     <div class="form-group">
         <label for="Title">Title</label>
         <input type="text" class="form-control" id="Title" name="Title" value="@Model?.Title" required />
@@ -39,11 +41,86 @@
             }
         </select>
     </div>
+
+    <!-- Course Search and Auto-fill Fields -->
+    <div class="form-group">
+        <label for="CourseSearch">Search Course</label>
+        <input type="text" class="form-control" id="CourseSearch" placeholder="Search by Course Code, Title, or Description">
+    </div>
+
+    <div class="form-group">
+        <label for="CourseCode">Course Code</label>
+        <select class="form-control" id="CourseCode" name="CourseCode" required>
+            <input type="hidden" class="form-control" id="CourseCode" name="CourseCode" value="@Model?.CourseCode">
+
+            <option value="">Select a Course</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="CourseTitle">Course Title</label>
+        <input type="text" class="form-control" id="CourseTitle" name="CourseTitle" value="@Model?.CourseTitle" readonly>
+    </div>
+
+    <div class="form-group">
+        <label for="CourseDescription">Course Description</label>
+        <textarea class="form-control" id="CourseDescription" name="CourseDescription" readonly>@Model?.CourseDescription</textarea>
+    </div>
+
     <br />
     <button type="submit" class="btn btn-primary">Submit Request</button>
 </form>
 
-@section Scripts
-{
-    <script src="~/js/custom-scripts.js"></script>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Trigger AJAX call when user types in CourseSearch field
+            $("#CourseSearch").on("keyup", function () {
+                let query = $(this).val().trim();
+                if (query.length > 2) {
+                    $.ajax({
+                        url: "/Instructor/SearchCourses",
+                        type: "GET",
+                        data: { query: query },
+                        success: function (courses) {
+                            // Log the JSON response from the backend
+                            console.log("Courses returned from the backend:", JSON.stringify(courses, null, 2));
+
+                            let courseDropdown = $("#CourseCode");
+                            courseDropdown.empty().append('<option value="">Select a Course</option>');
+
+                            // Use correct property names (lowercase) as returned in your JSON
+                            courses.forEach(course => {
+                                let option = `<option value="${course.courseCode}"
+                                                data-title="${course.courseTitle}"
+                                                data-description="${course.courseDescription}">
+                                                ${course.courseCode} - ${course.courseTitle}
+                                              </option>`;
+                                courseDropdown.append(option);
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.log("AJAX Error:", status, error);
+                        }
+                    });
+                }
+            });
+
+            // Auto-fill course details when a course is selected from the dropdown
+            $("#CourseCode").on("change", function () {
+                let selectedOption = $(this).find(":selected");
+
+                // Use .attr() to fetch the data attributes
+                let title = selectedOption.attr("data-title");
+                let description = selectedOption.attr("data-description");
+
+                // Debugging output in the console
+                console.log("Title:", title, "Description:", description);
+
+                // Populate the auto-fill fields
+                $("#CourseTitle").val(title);
+                $("#CourseDescription").val(description);
+            });
+        });
+    </script>
 }

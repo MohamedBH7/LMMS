@@ -29,6 +29,11 @@
         </div>
     }
 
+    <!-- Search Input -->
+    <div class="mb-3">
+        <input type="text" id="bookSearch" class="form-control" placeholder="Search books..." onkeyup="filterTable()" />
+    </div>
+
     <div class="table-responsive animate__animated animate__fadeInUp">
         <table id="bookTable" class="table table-striped table-bordered">
             <thead class="table-primary">
@@ -43,17 +48,17 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="bookTableBody">
                 @foreach (var book in Model)
                 {
                     <tr>
-                        <td>@book.Title</td>
-                        <td>@book.Author</td>
-                        <td>@book.Quantity</td>
-                        <td>@book.SectionName</td>
-                        <td>@book.Edition</td>
-                        <td>@book.Year</td>
-                        <td>@book.Publisher</td>
+                        <td class="book-title">@book.Title</td>
+                        <td class="book-author">@book.Author</td>
+                        <td class="book-quantity">@book.Quantity</td>
+                        <td class="book-section">@book.SectionName</td>
+                        <td class="book-edition">@book.Edition</td>
+                        <td class="book-year">@book.Year</td>
+                        <td class="book-publisher">@book.Publisher</td>
                         <td>
                             <form asp-action="RequestBorrow" method="post" class="d-inline">
                                 <input type="hidden" name="bookId" value="@book.Id" />
@@ -71,15 +76,29 @@
 <!-- Include Bootstrap 5 and Animate.css for animations -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
 <script>
-    $(document).ready(function () {
-        $('#bookTable').DataTable({
-            "columnDefs": [
-                { "orderable": false, "targets": 3 } // Make the Action column non-sortable
-            ]
-        });
-    });
+    function filterTable() {
+        var input = document.getElementById('bookSearch').value.toLowerCase(); // Get search input
+        var tableBody = document.getElementById('bookTableBody');
+        var rows = tableBody.getElementsByTagName('tr'); // Get all table rows
+
+        // Loop through all rows and filter based on the input
+        for (var i = 0; i < rows.length; i++) {
+            var title = rows[i].getElementsByClassName('book-title')[0].textContent.toLowerCase();
+            var author = rows[i].getElementsByClassName('book-author')[0].textContent.toLowerCase();
+            var quantity = rows[i].getElementsByClassName('book-quantity')[0].textContent.toLowerCase();
+            var section = rows[i].getElementsByClassName('book-section')[0].textContent.toLowerCase();
+            var edition = rows[i].getElementsByClassName('book-edition')[0].textContent.toLowerCase();
+            var year = rows[i].getElementsByClassName('book-year')[0].textContent.toLowerCase();
+            var publisher = rows[i].getElementsByClassName('book-publisher')[0].textContent.toLowerCase();
+
+            // Check if the row matches the search query
+            if (title.includes(input) || author.includes(input) || quantity.includes(input) || section.includes(input) || edition.includes(input) || year.includes(input) || publisher.includes(input)) {
+                rows[i].style.display = ''; // Show row
+            } else {
+                rows[i].style.display = 'none'; // Hide row
+            }
+        }
+    }
 </script>

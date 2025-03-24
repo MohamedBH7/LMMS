@@ -1,5 +1,4 @@
-﻿
-@model IEnumerable<LMMS.Models.BookSection>
+﻿@model IEnumerable<LMMS.Models.BookSection>
 
 @{
     ViewData["Title"] = "Manage Sections";
@@ -7,13 +6,44 @@
 
 @section Scripts {
     <script>
-        // Your custom JavaScript here
+        // Function to filter the table based on section names
+        function filterSections() {
+            var input = document.getElementById('sectionSearch').value.toLowerCase();
+            var table = document.getElementById('sectionsTable');
+            var rows = table.getElementsByTagName('tr');
+
+            for (var i = 1; i < rows.length; i++) {
+                var sectionName = rows[i].getElementsByClassName('section-name')[0].textContent.toLowerCase();
+
+                if (sectionName.includes(input)) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
     </script>
 }
 
 <h1>Manage Sections</h1>
+<!-- Add Section Form -->
+<br />
+<form asp-action="AddSection" method="post">
+    <div class="form-group">
+        <label for="SectionName">New Section Name</label>
+        <input type="text" class="form-control" id="SectionName" name="SectionName" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Add Section</button>
+</form>
+<br />
 
-<table class="table">
+<!-- Search Input -->
+<div class="mb-3">
+    <input type="text" id="sectionSearch" class="form-control" placeholder="Search Sections" onkeyup="filterSections()" />
+</div>
+
+<!-- Sections Table -->
+<table id="sectionsTable" class="table">
     <thead>
         <tr>
             <th>Section Name</th>
@@ -21,10 +51,10 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var sec in Model) // Changed 'section' to 'sec'
+        @foreach (var sec in Model)
         {
             <tr>
-                <td>@sec.SectionName</td> <!-- Fixed variable usage -->
+                <td class="section-name">@sec.SectionName</td>
                 <td>
                     <!-- Edit Section Form -->
                     <form asp-action="UpdateSection" method="post" style="display:inline;">
@@ -44,11 +74,3 @@
     </tbody>
 </table>
 
-<!-- Add Section Form -->
-<form asp-action="AddSection" method="post">
-    <div class="form-group">
-        <label for="SectionName">New Section Name</label>
-        <input type="text" class="form-control" id="SectionName" name="SectionName" required />
-    </div>
-    <button type="submit" class="btn btn-primary">Add Section</button>
-</form>

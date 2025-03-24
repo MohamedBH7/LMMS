@@ -3,6 +3,11 @@
 <div class="container mt-4">
     <h2 class="text-center">Pending Borrow Requests</h2>
 
+    <!-- Search Input -->
+    <div class="mb-3">
+        <input type="text" id="borrowRequestSearch" class="form-control" placeholder="Search Pending Requests" onkeyup="filterPendingRequests()" />
+    </div>
+
     <table id="borrowTable" class="table table-bordered">
         <thead>
             <tr>
@@ -17,8 +22,8 @@
             @foreach (var request in Model)
             {
                 <tr>
-                    <td>@request.UserEmail</td>
-                    <td>@request.BookTitle</td>
+                    <td class="user-email">@request.UserEmail</td>
+                    <td class="book-title">@request.BookTitle</td>
                     <td>@request.BorrowDate.ToString("yyyy-MM-dd")</td>
                     <td class="status">@request.Status</td>
                     <td>
@@ -35,3 +40,38 @@
         </tbody>
     </table>
 </div>
+
+<!-- Include Bootstrap 5 and Animate.css for animations -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Function to filter the pending borrow requests table
+    function filterPendingRequests() {
+        // Get the input value for search
+        var input = document.getElementById('borrowRequestSearch').value.toLowerCase();
+
+        // Get the table rows
+        var table = document.getElementById("borrowTable");
+        var rows = table.getElementsByTagName('tr');
+
+        // Loop through each row and filter based on the search input
+        for (var i = 1; i < rows.length; i++) { // Skip the header row
+            var userEmail = rows[i].getElementsByClassName("user-email")[0].textContent.toLowerCase();
+            var bookTitle = rows[i].getElementsByClassName("book-title")[0].textContent.toLowerCase();
+
+            // If the user email or book title matches the search input, show the row, else hide it
+            if (userEmail.includes(input) || bookTitle.includes(input)) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    }
+</script>
+
+<style>
+    .table-responsive {
+        overflow-x: auto;
+    }
+</style>
